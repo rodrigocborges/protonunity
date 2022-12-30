@@ -27,6 +27,15 @@ namespace Proton {
                         Vector3 targetPosition = new Vector3(float.Parse(infoRaw[0]), float.Parse(infoRaw[1]), float.Parse(infoRaw[2]));
                         _connectionManager.playersGameObjects[peerID].transform.position = targetPosition;
                     break;
+                    case SendDataType.Rotation:                    
+                        Vector3 targetRotation = new Vector3(float.Parse(infoRaw[0]), float.Parse(infoRaw[1]), float.Parse(infoRaw[2]));
+                        // _connectionManager.playersGameObjects[peerID].transform.localRotation = Quaternion.Euler(targetRotation.x, targetRotation.y, targetRotation.z);
+                        _connectionManager.playersGameObjects[peerID].transform.eulerAngles = targetRotation;
+                    break;
+                    case SendDataType.Scale:                    
+                        Vector3 targetScale = new Vector3(float.Parse(infoRaw[0]), float.Parse(infoRaw[1]), float.Parse(infoRaw[2]));
+                        _connectionManager.playersGameObjects[peerID].transform.localScale = targetScale;
+                    break;
                     case SendDataType.Instantiate:
                         string prefabPath = infoRaw[0];
                         Vector3 position = new Vector3(float.Parse(infoRaw[1]), float.Parse(infoRaw[2]), float.Parse(infoRaw[3]));

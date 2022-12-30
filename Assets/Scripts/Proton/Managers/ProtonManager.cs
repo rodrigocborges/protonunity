@@ -57,8 +57,11 @@ public class ProtonManager : MonoBehaviour
         if(!_connections.Values.Any())
             return;
 
-        foreach(var connection in _connections.Values)
+        foreach(var connection in _connections.Values){
+            if(connection.RemoteId.Equals(peer.GetLocalPeerID()))
+                continue;
             connection.Send(data);
+        }
     }
 
     void CheckNewPeers(){

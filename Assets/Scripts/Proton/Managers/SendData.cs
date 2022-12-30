@@ -30,14 +30,58 @@ namespace Proton {
             _z = z;
         }
 
-        public void Add(Vector3 pos){
-            _x = pos.x;
-            _y = pos.y;
-            _z = pos.z;
+        public void Add(Vector3 position){
+            Add(position.x, position.y, position.z);
         }
 
         public string SerializeData() => string.Format("{0}:{1};{2};{3}", _peerID, _x, _y, _z);
     }
+
+    public class SendDataScale : ISendData {
+
+        private string _peerID = null;
+        private float _x;
+        private float _y;
+        private float _z;
+
+        public SendDataScale(string peerID) => _peerID = peerID;
+
+        public void Add(float x, float y, float z){
+            _x = x;
+            _y = y;
+            _z = z;
+        }
+
+        public void Add(Vector3 position){
+            Add(position.x, position.y, position.z);
+        }
+
+        public string SerializeData() => string.Format("{0}:{1};{2};{3}", _peerID, _x, _y, _z);
+    }
+
+    public class SendDataRotation : ISendData
+    {
+        private string _peerID = null;
+        private float _x;
+        private float _y;
+        private float _z;
+        
+        public SendDataRotation(string peerID) => _peerID = peerID;
+
+        public void Add(float x, float y, float z){
+            _x = x;
+            _y = y;
+            _z = z;
+        }
+
+        public void Add(Quaternion rotation){
+            Add(rotation.x, rotation.y, rotation.z);
+        }
+
+        public string SerializeData() => string.Format("{0}:{1};{2};{3}", _peerID, _x, _y, _z);
+    }
+
+
 
     public class SendDataInstantiate : ISendData {
 

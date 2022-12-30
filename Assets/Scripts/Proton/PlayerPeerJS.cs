@@ -4,6 +4,7 @@ using Proton;
 public class PlayerPeerJS : MonoBehaviour
 {
     [SerializeField] private float speed;
+    [SerializeField] private float rotateSpeed;
 
     private SendData _sendDataRaycast;
     private SendDataInstantiate _sendDataInstantiate;
@@ -19,7 +20,6 @@ public class PlayerPeerJS : MonoBehaviour
     void Start(){
         GetComponent<MeshRenderer>().material.color = _identity.IsMine() ? Color.red : Color.blue;
 
-        // _sendData = new SendData(0.05f); //1 -> LENTO, 0.5 -> MAIS OU MENOS; 0.2 -> relativamente bom
         _sendDataInstantiate = new SendDataInstantiate(_identity.GetPeerID());
         _sendDataRaycast = new SendData(0f);
     }
@@ -44,7 +44,16 @@ public class PlayerPeerJS : MonoBehaviour
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
-        transform.Translate(new Vector3(horizontal * Time.deltaTime * speed, 0, vertical * Time.deltaTime * speed));
+        transform.Translate(new Vector3(0, 0, vertical * Time.deltaTime * speed));
+        transform.Rotate(new Vector3(0, horizontal * Time.deltaTime * rotateSpeed, 0));
+
+        if(Input.GetKeyDown(KeyCode.X)){
+            transform.localScale = new Vector3(Random.Range(1, 3), Random.Range(1, 3), Random.Range(1, 3));
+        }
+
+        if(Input.GetKeyDown(KeyCode.Z)){
+            transform.localScale = new Vector3(1, 1, 1);
+        }
 
         if(Input.GetMouseButtonDown(1)){
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
