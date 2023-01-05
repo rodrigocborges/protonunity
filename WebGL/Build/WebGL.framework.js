@@ -1171,29 +1171,29 @@ var tempDouble;
 var tempI64;
 
 var ASM_CONSTS = {
- 3895772: function() {
+ 3896860: function() {
   Module["emscripten_get_now_backup"] = performance.now;
  },
- 3895827: function($0) {
+ 3896915: function($0) {
   performance.now = function() {
    return $0;
   };
  },
- 3895875: function($0) {
+ 3896963: function($0) {
   performance.now = function() {
    return $0;
   };
  },
- 3895923: function() {
+ 3897011: function() {
   performance.now = Module["emscripten_get_now_backup"];
  },
- 3895978: function() {
+ 3897066: function() {
   return Module.webglContextAttributes.premultipliedAlpha;
  },
- 3896039: function() {
+ 3897127: function() {
   return Module.webglContextAttributes.preserveDrawingBuffer;
  },
- 3896103: function() {
+ 3897191: function() {
   return Module.webglContextAttributes.powerPreference;
  }
 };
@@ -2965,12 +2965,6 @@ function _JS_WebRequest_SetTimeout(requestId, timeout) {
  requestOptions.timeout = timeout;
 }
 
-function _NextEventType(peerInstance) {
- var peer = UnityPeerJS.peers[peerInstance];
- if (peer.events.length == 0) return 0;
- return peer.events[0].ev;
-}
-
 function _OpenPeer() {
  var peer = {
   peer: new Peer(null, {
@@ -2998,28 +2992,14 @@ function _OpenPeer() {
      });
     });
    }
-   peer.events.push({
-    ev: 2,
-    conn: connInstance,
-    id: conn.peer
-   });
    window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
     Code: 2,
     ConnectionIndex: connInstance,
     PeerID: conn.peer
    }));
-   console.log({
-    method: "Callback Connection Opened",
-    conn: conn
-   });
    _getStatsOfConnection();
    conn.on("data", function(data) {
     _getStatsOfConnection();
-    peer.events.push({
-     ev: 3,
-     conn: connInstance,
-     data: data
-    });
     window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
      Code: 3,
      ConnectionIndex: connInstance,
@@ -3028,83 +3008,37 @@ function _OpenPeer() {
    });
   });
   conn.on("close", function() {
-   peer.events.push({
-    ev: 4,
-    conn: connInstance
-   });
    window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
     Code: 4,
     ConnectionIndex: connInstance
    }));
   });
  };
- peer.popEvent = function(eventType) {
-  if (peer.events.length == 0) {
-   console.log("error: popEvent: event queue is empty");
-   return null;
-  }
-  if (eventType != 0 && peer.events[0].ev != eventType) {
-   console.log("error: popEvent: event type mismatch", eventType, peer.events[0].ev);
-   return null;
-  }
-  var result = peer.events.shift();
-  return result;
- };
  peer.peer.on("open", function(id) {
   peer.localId = id;
   peer.initialized = true;
-  peer.events.push({
-   ev: 1
-  });
   window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
    Code: 1
   }));
  });
  peer.peer.on("connection", peer.newConnection);
  peer.peer.on("disconnected", function() {
-  peer.events.push({
-   ev: 5
-  });
   window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
    Code: 5
   }));
  });
  peer.peer.on("close", function() {
-  peer.events.push({
-   ev: 6
-  });
   window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
    Code: 6
   }));
  });
  peer.peer.on("error", function(err) {
-  peer.events.push({
-   ev: 7,
-   err: err.type
-  });
   window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
    Code: 7,
    Data: err.type
   }));
  });
  return peerInstance;
-}
-
-function _PeekReceivedEventSize(peerInstance) {
- var peer = UnityPeerJS.peers[peerInstance];
- if (peer.events.length == 0) {
-  console.error("error: PeekReceivedEventSize: no event to peek at");
-  return 0;
- }
- var ev = peer.events[0];
- if (ev.ev == 3) {
-  return lengthBytesUTF8(ev.data);
- }
- if (ev.ev == 2) {
-  return lengthBytesUTF8(ev.id);
- }
- console.error("error: PeekReceivedEventSize: next event is of wrong type", ev.ev);
- return 0;
 }
 
 function _PeerDestroy(peerInstance) {
@@ -3115,73 +3049,6 @@ function _PeerDestroy(peerInstance) {
 function _PeerDisconnect(peerInstance) {
  var peer = UnityPeerJS.peers[peerInstance];
  peer.disconnect();
-}
-
-function _PopAnyEvent(peerInstance) {
- var peer = UnityPeerJS.peers[peerInstance];
- peer.popEvent(0);
-}
-
-function _PopConnClosedEvent(peerInstance) {
- var peer = UnityPeerJS.peers[peerInstance];
- var ev = peer.popEvent(4);
- return ev.conn;
-}
-
-function _PopConnectedEvent(peerInstance, remoteIdPtr, remoteIdMaxLength) {
- var peer = UnityPeerJS.peers[peerInstance];
- var ev = peer.popEvent(2);
- console.log({
-  method: "PopConnectedEvent",
-  peer: peer,
-  ev: ev
- });
- var bufferSize = lengthBytesUTF8(ev.id) + 1;
- var buffer = _malloc(bufferSize);
- stringToUTF8(ev.id, buffer, bufferSize);
- return ev.conn;
-}
-
-function _PopErrorEvent(peerInstance, errorPtr, errorMaxLength) {
- var peer = UnityPeerJS.peers[peerInstance];
- var ev = peer.popEvent(7);
- var str = ev.err.slice(0, Math.max(0, errorMaxLength / 2 - 1));
- var bufferSize = lengthBytesUTF8(str) + 1;
- var buffer = _malloc(bufferSize);
- stringToUTF8(str, buffer, bufferSize);
-}
-
-function _PopInitializedEvent(peerInstance) {
- var peer = UnityPeerJS.peers[peerInstance];
- var ev = peer.popEvent(1);
-}
-
-function _PopPeerClosedEvent(peerInstance) {
- var peer = UnityPeerJS.peers[peerInstance];
- var ev = peer.popEvent(6);
-}
-
-function _PopPeerDisconnectedEvent(peerInstance) {
- var peer = UnityPeerJS.peers[peerInstance];
- var ev = peer.popEvent(5);
-}
-
-function _PopReceivedEvent(peerInstance, dataPtr, dataMaxLength) {
- var peer = UnityPeerJS.peers[peerInstance];
- var ev = peer.popEvent(3);
- console.log({
-  method: "PopReceivedEvent",
-  peer: peer,
-  data: ev.data
- });
- if (ArrayBuffer.isView(ev.data)) {
-  console.log("Array buffers not supported");
-  return ev.conn;
- }
- var bufferSize = lengthBytesUTF8(ev.data) + 1;
- var buffer = _malloc(bufferSize);
- stringToUTF8(ev.data, buffer, bufferSize);
- return ev.conn;
 }
 
 function _Send(peerInstance, connInstance, data, length) {
@@ -14208,19 +14075,9 @@ var asmLibraryArg = {
  "JS_WebRequest_SetRedirectLimit": _JS_WebRequest_SetRedirectLimit,
  "JS_WebRequest_SetRequestHeader": _JS_WebRequest_SetRequestHeader,
  "JS_WebRequest_SetTimeout": _JS_WebRequest_SetTimeout,
- "NextEventType": _NextEventType,
  "OpenPeer": _OpenPeer,
- "PeekReceivedEventSize": _PeekReceivedEventSize,
  "PeerDestroy": _PeerDestroy,
  "PeerDisconnect": _PeerDisconnect,
- "PopAnyEvent": _PopAnyEvent,
- "PopConnClosedEvent": _PopConnClosedEvent,
- "PopConnectedEvent": _PopConnectedEvent,
- "PopErrorEvent": _PopErrorEvent,
- "PopInitializedEvent": _PopInitializedEvent,
- "PopPeerClosedEvent": _PopPeerClosedEvent,
- "PopPeerDisconnectedEvent": _PopPeerDisconnectedEvent,
- "PopReceivedEvent": _PopReceivedEvent,
  "Send": _Send,
  "SocketClose": _SocketClose,
  "SocketCreate": _SocketCreate,
@@ -14950,6 +14807,8 @@ var dynCall_jiiiii = Module["dynCall_jiiiii"] = createExportWrapper("dynCall_jii
 
 var dynCall_vifffi = Module["dynCall_vifffi"] = createExportWrapper("dynCall_vifffi");
 
+var dynCall_viffi = Module["dynCall_viffi"] = createExportWrapper("dynCall_viffi");
+
 var dynCall_viiifi = Module["dynCall_viiifi"] = createExportWrapper("dynCall_viiifi");
 
 var dynCall_viiiiijii = Module["dynCall_viiiiijii"] = createExportWrapper("dynCall_viiiiijii");
@@ -15047,8 +14906,6 @@ var dynCall_vffffi = Module["dynCall_vffffi"] = createExportWrapper("dynCall_vff
 var dynCall_viiiiffi = Module["dynCall_viiiiffi"] = createExportWrapper("dynCall_viiiiffi");
 
 var dynCall_viiiffii = Module["dynCall_viiiffii"] = createExportWrapper("dynCall_viiiffii");
-
-var dynCall_viffi = Module["dynCall_viffi"] = createExportWrapper("dynCall_viffi");
 
 var dynCall_vifii = Module["dynCall_vifii"] = createExportWrapper("dynCall_vifii");
 

@@ -13,44 +13,39 @@ namespace Proton.Sync {
     {
         public SyncTransformType Type;
         public float Delay;
-
         private EntityIdentity _identity;
-        private SendDataPosition _sendDataPosition;
-        private SendDataScale _sendDataScale;
-        private SendDataRotation _sendDataRotation;
         private SendData _sendDataManager;
-        private SendData _sendDataManager2;
-        private SendData _sendDataManager3;
+        private SendDataVector _sendDataVector;
+        private List<Vector3> _positions = new List<Vector3>();
+        private List<Vector3> _rotations = new List<Vector3>();
+        private List<Vector3> _scales = new List<Vector3>();
+
+        private const int MAX_CAPACITY_LISTS = 100;
+
+        //FIXME: Caso haja já um valor nessa lista simplesmente não envia, só após dar clear (problema notável na escala)
+
+        void ClearBufferSyncLists(){
+            if(_scales.Count >= 2)
+                _scales.Clear();
+            
+            if(_positions.Count >= MAX_CAPACITY_LISTS)
+                _positions.Clear();
+
+            if(_rotations.Count >= MAX_CAPACITY_LISTS)
+                _rotations.Clear();
+        }
 
         void Awake(){
             _identity = GetComponent<EntityIdentity>();
             _sendDataManager = new SendData(Delay);
-            _sendDataManager2 = new SendData(Delay);
-            _sendDataManager3 = new SendData(Delay);
         }
 
         void Start()
         {
-            switch(Type)
-            {
-                case SyncTransformType.Position:
-                    _sendDataPosition = new SendDataPosition(_identity.GetPeerID());
-                break;
-                case SyncTransformType.Rotation:
-                    _sendDataRotation = new SendDataRotation(_identity.GetPeerID());
-                break;
-                case SyncTransformType.Scale:
-                    _sendDataScale = new SendDataScale(_identity.GetPeerID());
-                break;
-                case SyncTransformType.All:
-                    _sendDataPosition = new SendDataPosition(_identity.GetPeerID());
-                    _sendDataRotation = new SendDataRotation(_identity.GetPeerID());
-                    _sendDataScale = new SendDataScale(_identity.GetPeerID());
-                break;
-            }
+            _sendDataVector = new SendDataVector(_identity.GetPeerID());
+            InvokeRepeating("ClearBufferSyncLists", 0, 60); //TODO: Conferir esse tempo
         }
 
-        // Update is called once per frame
         void Update()
         {
             if(!_identity.IsMine() || string.IsNullOrEmpty(_identity.GetPeerID()))
@@ -58,40 +53,60 @@ namespace Proton.Sync {
 
             switch(Type){
                 case SyncTransformType.Position:
-                    _sendDataManager.Update(() => {
-                        _sendDataPosition.Add(transform.position);
-                        _sendDataManager.Setup(SendDataType.Position, _sendDataPosition);            
-                    });
-                break;
+                    _syncPosition();
+                    break;
                 case SyncTransformType.Rotation:
-                    _sendDataManager.Update(() => {
-                        _sendDataRotation.Add(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z);
-                        _sendDataManager.Setup(SendDataType.Rotation, _sendDataRotation);            
-                    });
-                break;
+                    _syncRotation();
+                    break;
                 case SyncTransformType.Scale:
-                    _sendDataManager.Update(() => {
-                        _sendDataScale.Add(transform.localScale);
-                        _sendDataManager.Setup(SendDataType.Scale, _sendDataScale);            
-                    });
-                break;
+                    _syncScale();
+                    break;
                 case SyncTransformType.All:
-                    _sendDataManager.Update(() => {
-                        _sendDataPosition.Add(transform.position);
-                        _sendDataManager.Setup(SendDataType.Position, _sendDataPosition);
-                    });
-
-                    _sendDataManager2.Update(() => {
-                        _sendDataRotation.Add(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z);
-                        _sendDataManager.Setup(SendDataType.Rotation, _sendDataRotation);
-                    });
-
-                    _sendDataManager3.Update(() => {
-                        _sendDataScale.Add(transform.localScale);
-                        _sendDataManager.Setup(SendDataType.Scale, _sendDataScale);
-                    });
+                    _syncPosition();
+                    _syncRotation();
+                    _syncScale();
                 break;
             }
+        }
+
+        private void _syncScale()
+        {
+            _sendDataManager.Update(() =>
+            {
+                if(!_scales.Contains(transform.localScale))
+                {
+                    _scales.Add(transform.localScale);
+                    // _sendDataScale.Add(transform.localScale);
+                    _sendDataVector.Add(transform.localScale);
+                    _sendDataManager.Setup(SendDataType.Scale, _sendDataVector);
+                }
+            });
+        }
+
+        private void _syncRotation()
+        {
+            _sendDataManager.Update(() =>
+            {
+                if(!_rotations.Contains(transform.eulerAngles)){
+                    _rotations.Add(transform.eulerAngles);
+                    // _sendDataRotation.Add(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z);
+                    _sendDataVector.Add(transform.eulerAngles);
+                    _sendDataManager.Setup(SendDataType.Rotation, _sendDataVector);
+                }
+            });
+        }
+
+        private void _syncPosition()
+        {
+            _sendDataManager.Update(() =>
+            {
+                if(!_positions.Contains(transform.position)){
+                    _positions.Add(transform.position);
+                    // _sendDataPosition.Add(transform.position);
+                    _sendDataVector.Add(transform.position);
+                    _sendDataManager.Setup(SendDataType.Position, _sendDataVector);
+                }
+            });
         }
     }
 }

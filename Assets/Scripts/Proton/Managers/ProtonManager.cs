@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using TMPro;
 using System.Linq;
 using Proton;
+using Proton.Sync;
 
 [System.Serializable]
 public class EventManagerData {
@@ -50,6 +51,7 @@ public class ProtonManager : MonoBehaviour
 
     private SignallingServer signallingServer;
     private ReceiveData receiveData;
+    public GenericDataManager GenericDataManager;
 
     public Dictionary<string, GameObject> playersGameObjects = new Dictionary<string, GameObject>();
 
@@ -62,6 +64,12 @@ public class ProtonManager : MonoBehaviour
                 continue;
             connection.Send(data);
         }
+    }
+
+    public SyncText FindText(string peerID, string dataKey){
+        GameObject textGameObject = GameObject.Find(string.Format("Text_{0}_{1}", peerID, dataKey));
+        if(textGameObject == null) return null;
+        return textGameObject.GetComponent<SyncText>();
     }
 
     void CheckNewPeers(){
@@ -119,20 +127,19 @@ public class ProtonManager : MonoBehaviour
         signallingServer.RemovePeer(peer.GetLocalPeerID());
     }
 
-    private void SpawnPlayer(string peerID, bool isMine = false){
+    private void SpawnPlayer(string peerID, bool isLocal = false){
         //Evita de spawnar novamente pro mesmo PeerID
         if(playersGameObjects.ContainsKey(peerID))
             return;
         GameObject spawnedPlayer = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
         spawnedPlayer.name = "Player_" + peerID;
-        spawnedPlayer.GetComponent<EntityIdentity>().SetOwner(peerID, isMine);
+        spawnedPlayer.GetComponent<EntityIdentity>().SetOwner(peerID, isLocal);
         playersGameObjects.Add(peerID, spawnedPlayer);
+        GenericDataManager.Setup(peerID, spawnedPlayer);
     }
 
     private void HandleOnOpen()
     {
-        // myPeerIDField.text = peer.GetLocalPeerID();
-
         isOpen = true;
 
         signallingServer.AddNewPeer(peer.GetLocalPeerID());
@@ -164,31 +171,23 @@ public class ProtonManager : MonoBehaviour
 
     private void HandleOnConnection(UnityPeerJS.Peer.IConnection connection)
     {
-        //Numero de conexões: 2^n ('n' numero de players)
-        //3 JOGADORES, 8 CONEXÕES
         
-        Debug.Log("Call HandleOnConnection()");
         CheckNewPeers();
 
         signallingServer.ChangeConnectionStateOfPeer(connection.RemoteId, true);
 
         SpawnPlayer(connection.RemoteId);
 
-        // messageField.interactable = true;
-
-        connectionStateText.text = "Conectado ("+ _numberOfPlayers +")";
+        //Numero de conexões: 2^n ('n' numero de players)
+        //3 JOGADORES, 8   - >  Será?
+        _numberOfPlayers = MathUtil.Pow2Reverse(_connections.Count);
+        connectionStateText.text = "Conectado ("+ _numberOfPlayers +" jogadores)";
 
         connection.OnData += HandleOnData;
         connection.OnClose += HandleOnClose;
-
-        // connection.Send("Novo usuário conectado!");        
     }
 
     private void HandleOnData(string data) => receiveData.Handle(data);
-
-    private void WriteMessageContent(string message, string prefix = null){
-        messageContent.text += (string.IsNullOrEmpty(prefix) ? "" : "[" + prefix + "]: ") + message + "\n";        
-    }
 
     //Método responsável por sinalizar callbacks do PeerJS
     public void EventManager(string data){
@@ -214,9 +213,9 @@ public class ProtonManager : MonoBehaviour
             {
                 int connectionIndex = eventManagerData.ConnectionIndex;
                 string remoteId = eventManagerData.PeerID;
-                _numberOfPlayers = connectionIndex + 1; //APENAS TESTE
                 _connections[connectionIndex] = new UnityPeerJS.Peer.Connection(peer, connectionIndex, remoteId);
                 HandleOnConnection(_connections[connectionIndex]);
+                Debug.Log(string.Format("[ProtonManager] `{0}` connected with `{1}`", peer.GetLocalPeerID(), remoteId));
                 break;
             }
             case UnityPeerJS.PeerEventType.Received:
@@ -272,13 +271,6 @@ public class ProtonManager : MonoBehaviour
         connectionStatsText.text += string.Format("Bytes recebidos: {0}\n", connectionStatsData.BytesReceived);
         connectionStatsText.text += string.Format("Ping: {0}ms\n", connectionStatsData.CurrentRoundTripTime);
         connectionStatsText.text += string.Format("TotalRoundTripTime: {0}ms\n", connectionStatsData.TotalRoundTripTime);
-    }
-
-    private string DecodeUtf16Z(byte[] buffer)
-    {
-        var length = 0;
-        while (length + 1 < buffer.Length && (buffer[length] != 0 || buffer[length + 1] != 0))
-            length += 2;
-        return System.Text.Encoding.Unicode.GetString(buffer, 0, length);
+        connectionStatsText.text += string.Format("Número de conexões: {0}\n", _connections.Count);
     }
 }

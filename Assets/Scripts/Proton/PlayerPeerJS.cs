@@ -6,13 +6,11 @@ public class PlayerPeerJS : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float rotateSpeed;
 
-    private SendData _sendDataRaycast;
+    private SendData _sendData;
     private SendDataInstantiate _sendDataInstantiate;
-
     private RaycastHit hit;
-
     private EntityIdentity _identity;
-
+    
     void Awake(){
         _identity = GetComponent<EntityIdentity>();
     }
@@ -20,8 +18,11 @@ public class PlayerPeerJS : MonoBehaviour
     void Start(){
         GetComponent<MeshRenderer>().material.color = _identity.IsMine() ? Color.red : Color.blue;
 
+        if(!_identity.IsMine())
+            return;
+
         _sendDataInstantiate = new SendDataInstantiate(_identity.GetPeerID());
-        _sendDataRaycast = new SendData(0f);
+        _sendData = new SendData(0f);
     }
 
     void SpawnObject(bool onlyLocal){
@@ -33,7 +34,7 @@ public class PlayerPeerJS : MonoBehaviour
         }
 
         _sendDataInstantiate.Add("TestCube", new Vector3(hit.point.x, 0, hit.point.z), Quaternion.identity);
-        _sendDataRaycast.Setup(SendDataType.Instantiate, _sendDataInstantiate);
+        _sendData.Setup(SendDataType.Instantiate, _sendDataInstantiate);
     }
 
     void Update()
@@ -60,6 +61,5 @@ public class PlayerPeerJS : MonoBehaviour
             if(Physics.Raycast(ray, out hit))
                 SpawnObject(false);
         }
-
     }
 }

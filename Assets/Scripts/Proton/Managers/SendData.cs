@@ -8,7 +8,8 @@ namespace Proton {
         Position,
         Scale,
         Rotation,
-        Instantiate
+        Instantiate,
+        GenericData
     }
 
     public interface ISendData {
@@ -65,7 +66,7 @@ namespace Proton {
         private float _x;
         private float _y;
         private float _z;
-        
+
         public SendDataRotation(string peerID) => _peerID = peerID;
 
         public void Add(float x, float y, float z){
@@ -80,8 +81,6 @@ namespace Proton {
 
         public string SerializeData() => string.Format("{0}:{1};{2};{3}", _peerID, _x, _y, _z);
     }
-
-
 
     public class SendDataInstantiate : ISendData {
 
@@ -100,6 +99,46 @@ namespace Proton {
 
         public string SerializeData() => string.Format("{0}:{1};{2};{3};{4};{5};{6};{7}", _peerID, _prefabPath, _position.x, _position.y, _position.z, _rotation.x, _rotation.y, _rotation.z);
     }
+
+    public class SendDataGeneric : ISendData {
+
+        private string _peerID = null;
+        private string _key;
+        private object _data;
+
+        public SendDataGeneric(string peerID) => _peerID = peerID;
+
+        public void Add(string key, object data){
+            _key = key;
+            _data = data;    
+        }
+
+        public string SerializeData() => string.Format("{0}:{1};{2}", _peerID, _key, _data);
+    }
+
+    public class SendDataVector : ISendData {
+
+        private string _peerID = null;
+        private float _x;
+        private float _y;
+        private float _z;
+
+        public SendDataVector(string peerID) => _peerID = peerID;
+
+        public void Add(float x, float y, float z){
+            _x = x;
+            _y = y;
+            _z = z;
+        }
+
+        public void Add(float x, float y) => Add(x, y, 0);
+
+        public void Add(Vector3 vector) => Add(vector.x, vector.y, vector.z);
+        public void Add(Vector2 vector) => Add(vector.x, vector.y);
+
+        public string SerializeData() => string.Format("{0}:{1};{2};{3}", _peerID, _x, _y, _z);
+    }
+
 
     public class SendData
     {
@@ -123,13 +162,19 @@ namespace Proton {
         }
 
         public void Send(){
-            if(!_allData.Contains(_serializedData)){
+            if(_dataType == SendDataType.GenericData)
+            {
+                ProtonManager.Instance.SendToAll(_serializedData);
+                return;
+            }
+
+            if(!_allData.Contains(_serializedData) && _dataType != SendDataType.GenericData){
                 _allData.Add(_serializedData);
                 ProtonManager.Instance.SendToAll(_serializedData);
                 return;
             }
 
-            if(_allData.Capacity > 20)
+            if(_allData.Count > 20)
                 _allData.Clear();
         }   
 

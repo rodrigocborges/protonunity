@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Proton.Sync;
+
 namespace Proton {
     public class EntityIdentity : MonoBehaviour
     {
