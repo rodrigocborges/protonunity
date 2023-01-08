@@ -6,8 +6,12 @@ using UnityEngine;
 public class NetworkRoom : MonoBehaviourPunCallbacks
 {
     [SerializeField] private GameObject playerPrefab;
+
     void Start()
     {
-        PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero, Quaternion.identity);
+        LocalPlayer = PhotonNetwork.Instantiate(playerPrefab.name, GetRandomSpawnPoint(), Quaternion.identity);
     }
+
+    public static Vector3 GetRandomSpawnPoint() => new Vector3(Random.Range(-12, 12), Random.Range(-9, 9), 0);
+    public static GameObject LocalPlayer = null;
 }

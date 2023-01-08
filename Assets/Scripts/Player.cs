@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -12,6 +13,7 @@ public class Player : MonoBehaviour
     private Rigidbody2D rb;
     private float nextFire = 0;
     private AudioSource audioSource;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -28,9 +30,10 @@ public class Player : MonoBehaviour
         rb.velocity = input.normalized * moveSpeed;
     }
 
-    public void Fire(){
+    public void Fire(GameObject localPlayer){
         if(Input.GetMouseButton(0) && Time.time > nextFire){
-            Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            GameObject bullet = PhotonNetwork.Instantiate(bulletPrefab.name, firePoint.position, firePoint.rotation);
+            bullet.GetComponent<Bullet>().SetLocalPlayer(localPlayer);
             AudioUtil.PlayOneShot(audioSource, fireSound);
             nextFire = Time.time + fireRate;
         }

@@ -17,9 +17,18 @@ public class Launcher : MonoBehaviourPunCallbacks
         loadingText.SetActive(true);
         formConnection.SetActive(false);
         PhotonNetwork.ConnectUsingSettings();   
+
+        usernameField.text = "Usuario_" + Random.Range(1000, 9999);
+        roomNameField.text = "dev";
     }
 
     public override void OnConnectedToMaster()
+    {
+        print("Conectado ao master server");
+        PhotonNetwork.JoinLobby();
+    }
+
+    public override void OnJoinedLobby()
     {
         loadingText.SetActive(false);
         formConnection.SetActive(true);

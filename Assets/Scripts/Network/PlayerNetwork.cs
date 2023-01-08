@@ -6,9 +6,12 @@ using UnityEngine;
 public class PlayerNetwork : MonoBehaviourPun
 {
     [SerializeField] private Player playerBehaviour;
-    void Start()
-    {
-        
+    [SerializeField] private Health health;
+    [SerializeField] private Score score;
+
+    void Start(){        
+        if(!photonView.IsMine)
+            return;
     }
 
     void Update()
@@ -17,7 +20,22 @@ public class PlayerNetwork : MonoBehaviourPun
             return;
 
         playerBehaviour.LookAtMouse();
-        playerBehaviour.Move();
-        playerBehaviour.Fire(); 
+
+        playerBehaviour.Fire(this.gameObject); 
     }
+
+    void FixedUpdate(){
+        
+        if(!photonView.IsMine)
+            return;
+
+        playerBehaviour.Move();
+    }
+
+    // [PunRPC]
+    // public void RpcTakeDamage(int damage, int photonViewIDPlayer){
+    //     health.TakeDamage(damage, photonViewIDPlayer);
+    // }
+
+    
 }
