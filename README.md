@@ -1,8 +1,7 @@
 # Proton
 
-![Exemplo simples com 4 jogadores](https://imgur.com/iLJawHA.gif)
-*Exemplo simples com 4 jogadores - estava sendo usado um delay intencional para sincronização/envio das informações de posição para não
-sobrecarregar o data channel.*
+![Exemplo simples com 2 jogadores](https://media.githubusercontent.com/media/rodrigocborges/protonunity/master/Gifs/teste_2_jogadores_sem_delay.gif)
+*Exemplo simples com 2 jogadores - sincronização de posição, escala, rotação e texto da nametag*
 
 A maioria das arquiteturas de rede que são utilizadas em jogos multiplayer online são cliente-servidor. O presente projeto 
 trata de construir uma alternativa ligada a implementação da arquitetura peer-to-peer para:
