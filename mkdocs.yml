@@ -1,0 +1,5 @@
+site_name: Documentação Proton
+site_url: https://protonunity.readthedocs.io/
+nav:
+    - Home: index.md
+theme: readthedocs
