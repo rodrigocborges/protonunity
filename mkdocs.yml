@@ -1,5 +1,8 @@
-site_name: Documentação Proton
-site_url: https://protonunity.readthedocs.io/
-nav:
-    - Home: index.md
-theme: readthedocs
+site_name: Documentação Proton Unity
+theme:
+  name: readthedocs
+  highlightjs: true
+markdown_extensions:
+  - markdown_include.include:
+      base_path: .
+  - admonition
