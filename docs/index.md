@@ -5,6 +5,11 @@ Framework open source (<https://github.com/rodrigocborges/protonunity>) para des
 para WebGL online usando a tecnologia WebRTC com a Unity. Portanto os jogos todos têm seu build focados somente 
 para web.
 
+## O que é WebRTC?
+WebRTC é uma tecnologia que permite a comunicação em tempo real entre diferentes dispositivos na internet. Ele foi desenvolvido para permitir a criação de aplicações de vídeo e voz em tempo real sem a necessidade de plugins ou aplicativos adicionais. WebRTC usa protocolos padrão da internet para transmitir dados de áudio e vídeo de maneira segura e eficiente, o que o torna uma opção popular para aplicativos de mensagens instantâneas, videoconferências e chamadas de voz. Ele também pode ser usado para compartilhar arquivos e dados em tempo real entre dispositivos, como a transferência de arquivos entre usuários.
+
+Site oficial: <https://webrtc.org/>
+
 ## Instalação
 O processo de instalação é simples, basta fazer um clone do repositório no GitHub, exemplo:
 
