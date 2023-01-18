@@ -7,15 +7,6 @@ using Proton;
 using Proton.Sync;
 
 [System.Serializable]
-public class EventManagerData {
-    public int Code { get; set; }
-    public int ConnectionIndex { get; set; }
-    public string Data { get; set; }
-    public string Error { get; set; }
-    public string PeerID { get; set; }
-}
-
-[System.Serializable]
 public class ConnectionStatsData {
     public string Type { get; set; }
     public int PacketsSent { get; set; }
@@ -24,6 +15,7 @@ public class ConnectionStatsData {
     public int BytesReceived { get; set; }
     public float TotalRoundTripTime { get; set; }
     public float CurrentRoundTripTime { get; set; }
+    public long Timestamp { get; set; }
 }
 
 public class ProtonManager : MonoBehaviour
@@ -32,26 +24,29 @@ public class ProtonManager : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject playerPrefab;
     [Header("HUD")]
-    [SerializeField] private TMP_InputField messageField;
 
-    [SerializeField] private TMP_InputField myPeerIDField;
-    [SerializeField] private TMP_InputField connectPeerIDField;
     [SerializeField] private TMP_Text connectionStateText;
-    [SerializeField] private TMP_Text messageContent;
     [SerializeField] private TMP_Text connectionStatsText;
-
 
     private UnityPeerJS.Peer peer;
     private readonly Dictionary<int, UnityPeerJS.Peer.Connection> _connections = new Dictionary<int, UnityPeerJS.Peer.Connection>();
-    private int _numberOfPlayers = 0;
+    private int _numberOfPeers = 0;
 
     private bool isOpen = false;
 
     private List<string> connectedPeersIDs = new List<string>();
+    private List<string> _peerList = new List<string>();
 
     private SignallingServer signallingServer;
     private ReceiveData receiveData;
     public GenericDataManager GenericDataManager;
+
+    private PeerJSEventManager peerJSEventManager;
+
+    private float timeToSendConnectionStats = 10;
+    private float currentTimeToSendConnectionStats = 0;
+    private string lastConnectionStatsData = "";
+    private bool sendConnectionStats = false;
 
     public Dictionary<string, GameObject> playersGameObjects = new Dictionary<string, GameObject>();
 
@@ -73,7 +68,7 @@ public class ProtonManager : MonoBehaviour
     }
 
     void CheckNewPeers(){
-        signallingServer.CheckAndGetPeers((peers) => {
+        /*signallingServer.CheckAndGetPeers((peers) => {
             var filteredPeers = peers.Where(x => !x.PeerID.Equals(peer.GetLocalPeerID()));
             foreach(var p in filteredPeers){
                 //Lista auxiliar para identificar quais peers já foram conectados com o local
@@ -82,7 +77,19 @@ public class ProtonManager : MonoBehaviour
                     connectedPeersIDs.Add(p.PeerID);
                 }
             }
-        });
+        });*/
+
+        if(_peerList == null || !_peerList.Any())
+            return;
+
+        var filteredPeers = _peerList.Where(x => !x.Equals(peer.GetLocalPeerID()));
+        foreach(var p in filteredPeers){
+            //Lista auxiliar para identificar quais peers já foram conectados com o local
+            if(!connectedPeersIDs.Contains(p)){
+                peer.Connect(p, null);
+                connectedPeersIDs.Add(p);
+            }
+        }
     }
 
     void Awake(){
@@ -92,14 +99,8 @@ public class ProtonManager : MonoBehaviour
 
         signallingServer = new SignallingServer();
         receiveData = new ReceiveData(this);
+        peerJSEventManager = new PeerJSEventManager();
 
-        // messageField.interactable = false;  
-
-        // messageField.onSubmit.AddListener((text) => {
-        //     SendToAll(text);
-        //     messageField.text = "";
-        // });
-        
         peer = new UnityPeerJS.Peer();
         peer.OnConnection += HandleOnConnection;
         peer.OnOpen += HandleOnOpen;
@@ -110,8 +111,6 @@ public class ProtonManager : MonoBehaviour
     private void HandleOnDisconnected()
     {
         connectionStateText.text = "Desconectado";
-
-        signallingServer.RemovePeer(peer.GetLocalPeerID());
     }
 
     private void HandleOnError(string message)
@@ -122,9 +121,6 @@ public class ProtonManager : MonoBehaviour
     private void HandleOnClose()
     {
         connectionStateText.text = "Conexão finalizada";
-
-        signallingServer.ChangeConnectionStateOfPeer(peer.GetLocalPeerID(), false);
-        signallingServer.RemovePeer(peer.GetLocalPeerID());
     }
 
     private void SpawnPlayer(string peerID, bool isLocal = false){
@@ -142,8 +138,6 @@ public class ProtonManager : MonoBehaviour
     {
         isOpen = true;
 
-        signallingServer.AddNewPeer(peer.GetLocalPeerID());
-
         connectionStateText.text = "Conexão aberta";
 
         SpawnPlayer(peer.GetLocalPeerID(), true);
@@ -151,15 +145,14 @@ public class ProtonManager : MonoBehaviour
         InvokeRepeating("CheckNewPeers", 2, 10);
     }
 
-    public void Connect(){
-        if(string.IsNullOrEmpty(connectPeerIDField.text))
+    public void Connect(string peerID, string roomName = null){
+        if(string.IsNullOrEmpty(peerID))
             return;
 
-        peer.Connect(connectPeerIDField.text);
+        peer.Connect(peerID, roomName);
     }
 
     private void OnDestroy(){
-        signallingServer.RemovePeer(peer.GetLocalPeerID());
         peer.OnConnection -= HandleOnConnection;
         peer.OnOpen -= HandleOnOpen;
         peer.OnClose -= HandleOnClose;
@@ -174,14 +167,9 @@ public class ProtonManager : MonoBehaviour
         
         CheckNewPeers();
 
-        signallingServer.ChangeConnectionStateOfPeer(connection.RemoteId, true);
-
         SpawnPlayer(connection.RemoteId);
 
-        //Numero de conexões: 2^n ('n' numero de players)
-        //3 JOGADORES, 8   - >  Será?
-        _numberOfPlayers = MathUtil.Pow2Reverse(_connections.Count);
-        connectionStateText.text = "Conectado ("+ _numberOfPlayers +" jogadores)";
+        connectionStateText.text = "Conectado";
 
         connection.OnData += HandleOnData;
         connection.OnClose += HandleOnClose;
@@ -195,64 +183,21 @@ public class ProtonManager : MonoBehaviour
             Debug.Log("Call EventManager() -> data is empty");
             return;
         }
-        // Debug.Log("Call EventManager() -> data: " + data);
 
         EventManagerData eventManagerData = JsonConvert.DeserializeObject<EventManagerData>(data);
         if(eventManagerData == null)
             return;
 
-        UnityPeerJS.PeerEventType peerEventType = (UnityPeerJS.PeerEventType)eventManagerData.Code;
-        switch (peerEventType)
-        {
-            case UnityPeerJS.PeerEventType.Initialized:
-            {
-                HandleOnOpen();
-                break;
-            }
-            case UnityPeerJS.PeerEventType.Connected:
-            {
-                int connectionIndex = eventManagerData.ConnectionIndex;
-                string remoteId = eventManagerData.PeerID;
-                _connections[connectionIndex] = new UnityPeerJS.Peer.Connection(peer, connectionIndex, remoteId);
-                HandleOnConnection(_connections[connectionIndex]);
-                Debug.Log(string.Format("[ProtonManager] `{0}` connected with `{1}`", peer.GetLocalPeerID(), remoteId));
-                break;
-            }
-            case UnityPeerJS.PeerEventType.Received:
-            {
-                _connections[eventManagerData.ConnectionIndex].EmitOnData(eventManagerData.Data);
-                break;
-            }
-
-            case UnityPeerJS.PeerEventType.ConnClosed:
-            {
-                _connections[eventManagerData.ConnectionIndex].EmitOnClose();
-                break;
-            }
-
-            case UnityPeerJS.PeerEventType.PeerDisconnected:
-            {
-                HandleOnDisconnected();
-                break;
-            }
-
-            case UnityPeerJS.PeerEventType.PeerClosed:
-            {
-                HandleOnClose();
-                break;
-            }
-
-            case UnityPeerJS.PeerEventType.Error:
-            {
-                HandleOnError(eventManagerData.Data);
-                break;
-            }
-
-            default:
-            {
-                break;
-            }
-        }
+        peerJSEventManager.Handle(
+            eventManagerData, 
+            peer, 
+            _connections, 
+            HandleOnOpen, 
+            HandleOnConnection, 
+            HandleOnDisconnected, 
+            HandleOnClose, 
+            HandleOnError
+        );
     }
 
     public void ConnectionStatsManager(string data){
@@ -272,5 +217,26 @@ public class ProtonManager : MonoBehaviour
         connectionStatsText.text += string.Format("Ping: {0}ms\n", connectionStatsData.CurrentRoundTripTime);
         connectionStatsText.text += string.Format("TotalRoundTripTime: {0}ms\n", connectionStatsData.TotalRoundTripTime);
         connectionStatsText.text += string.Format("Número de conexões: {0}\n", _connections.Count);
+
+        // if(!sendConnectionStats)
+        //     sendConnectionStats = true;
+
+        // lastConnectionStatsData = JsonConvert.SerializeObject(connectionStatsData);
     }
+
+    public void SetPeerList(List<string> peerList){
+        _peerList = peerList;
+        _numberOfPeers = peerList.Count;
+        connectionStateText.text = "Conectado ("+ _numberOfPeers +" jogadores)";
+    }
+
+    // void Update(){
+    //     if(sendConnectionStats){
+    //         currentTimeToSendConnectionStats += Time.deltaTime;
+    //         if(currentTimeToSendConnectionStats >= timeToSendConnectionStats){
+    //             signallingServer.SendConnectionStats(lastConnectionStatsData);
+    //             currentTimeToSendConnectionStats = 0;
+    //         }
+    //     }
+    // }
 }

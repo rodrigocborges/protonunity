@@ -46,6 +46,9 @@ namespace Proton {
                         
                         GameObject spawnedObject = MonoBehaviour.Instantiate(Resources.Load<GameObject>(prefabPath), position, rotation);
                         spawnedObject.name = string.Format("GameObject_{0}", peerID);
+
+                        Debug.Log(string.Format("[ReceiveData, Handle()]: Instantiate {0} {1} {2}", prefabPath, position, rotation));
+
                     break;
                     case SendDataType.GenericData:
                         string receivedDataKey = infoRaw[0];
@@ -55,15 +58,6 @@ namespace Proton {
                     break;
                 }
                  
-            }
-        }
-
-        public IEnumerator MoveOverSpeed (GameObject objectToMove, Vector3 end, float speed){
-            // speed should be 1 unit per second
-            while (objectToMove.transform.position != end)
-            {
-                objectToMove.transform.position = Vector3.MoveTowards(objectToMove.transform.position, end, speed * Time.deltaTime);
-                yield return new WaitForEndOfFrame ();
             }
         }
 

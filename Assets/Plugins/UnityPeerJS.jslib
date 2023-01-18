@@ -21,7 +21,7 @@ var LibraryUnityPeerJS = {
     OpenPeer: function () {
 
         var peer = {
-            peer: new Peer(null, { debug: 2 }),
+            peer: new Peer(null, { host: 'proton-server.squareweb.app', debug: 2 }),
             initialized: false,
             conns: [],
             events: [],
@@ -73,6 +73,12 @@ var LibraryUnityPeerJS = {
             peer.localId = id;
             peer.initialized = true;
             window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 1 }));
+
+            setInterval(function() {
+                peer.peer.listAllPeers(function(peerList) {
+                    window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 8, Data: JSON.stringify(peerList) }));
+                });
+            }, 5000);
         });
 
         peer.peer.on('connection', peer.newConnection);
@@ -115,11 +121,11 @@ var LibraryUnityPeerJS = {
         return buffer;
     },
 
-    Connect: function (peerInstance, id) {
+    Connect: function (peerInstance, id, roomName) {
         var idstr = UTF8ToString(id);
         var peer = UnityPeerJS.peers[peerInstance];
-        // console.log({ method: 'Connect', idstr, peer });
-        peer.newConnection(peer.peer.connect(idstr));
+        var roomNameStr = UTF8ToString(roomName);
+        peer.newConnection(peer.peer.connect(idstr, { label: roomNameStr }));
     },
 
     Send: function (peerInstance, connInstance, data, length) {

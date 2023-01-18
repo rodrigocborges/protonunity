@@ -16,6 +16,7 @@ namespace Proton {
         public string SerializeData();
     }
 
+    [System.Obsolete]
     public class SendDataPosition : ISendData {
 
         private string _peerID = null;
@@ -38,6 +39,7 @@ namespace Proton {
         public string SerializeData() => string.Format("{0}:{1};{2};{3}", _peerID, _x, _y, _z);
     }
 
+    [System.Obsolete]
     public class SendDataScale : ISendData {
 
         private string _peerID = null;
@@ -60,6 +62,7 @@ namespace Proton {
         public string SerializeData() => string.Format("{0}:{1};{2};{3}", _peerID, _x, _y, _z);
     }
 
+    [System.Obsolete]
     public class SendDataRotation : ISendData
     {
         private string _peerID = null;

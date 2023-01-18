@@ -25,7 +25,7 @@ do PeerJS, uma biblioteca que abstrai e simplifica muito a utilização da tecno
 uma ponte das funções Javascript com C# linguagem nativa e principal para programação dos jogos na engine. Portanto, todo processo
 do WebRTC: conexão entre os peers e também a criação e o envio de mensagens, é feito do via Javascript.
 
-# Utilização
+## Utilização
 
 Para entender os conceitos de networking para construir um jogo multiplayer online na Unity usando esse framework, devemos aplicar alguns passos. Se você quiser adicionar um jogador onde só você controla (comportamento esperado) você precisa adicionar nesse objeto o seguinte script ao GameObject: `EntityIdentity`.
 
@@ -42,7 +42,7 @@ using Proton;
 
 public class PlayerNetwork : MonoBehaviour
 {
-    [SerializeField] private float speed; //Velocidade de movimentaçã do jogador
+    [SerializeField] private float speed; //Velocidade de movimentação do jogador
 
     private EntityIdentity _identity;
     

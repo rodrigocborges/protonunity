@@ -17,4 +17,8 @@ public static class MathUtil
 		}
 		return i;
 	}
+
+	public static bool Vector3Equal(UnityEngine.Vector3 v1, UnityEngine.Vector3 v2){
+		return UnityEngine.Vector3.SqrMagnitude(v1 - v2) < 0.0001;
+	}
 }

@@ -10,20 +10,25 @@ namespace Proton.Sync {
         private TMPro.TMP_Text textObject;
         private string _currentText;
 
-        private string onlyTestText = "";
+        //FIXME: Remover isso depois!
+        // private string onlyTestText = "";
 
         private SendData _sendData;
         private SendDataGeneric _sendDataGeneric;
+        private string currentLocalText = "";
 
         void Awake()
         {
             textObject = GetComponent<TMPro.TMP_Text>();
             gameObject.name = string.Format("Text_{0}_{1}", entityIdentity.GetPeerID(), dataKey);
-
-            onlyTestText = "User_" + Random.Range(1000, 9999);
+    
+            //FIXME: Remover isso depois!
+            // onlyTestText = "User_" + Random.Range(1000, 9999);
         }
 
         void Start(){            
+            currentLocalText = textObject.text;
+            
             _sendData = new SendData(2f);
             _sendDataGeneric = new SendDataGeneric(entityIdentity.GetPeerID());    
         }
@@ -38,16 +43,15 @@ namespace Proton.Sync {
                 return;    
                 
             _sendData.Update(() => {
-                _sendDataGeneric.Add(dataKey, onlyTestText);
+                _sendDataGeneric.Add(dataKey, currentLocalText);
                 _sendData.Setup(SendDataType.GenericData, _sendDataGeneric);
             });
         }
 
         private void _setText(string text){
-            // Debug.Log("Setting text");
             if(string.IsNullOrEmpty(text))
             {
-                textObject.text = onlyTestText;
+                textObject.text = currentLocalText;
                 return;
             }
             if(_currentText.Equals(text))

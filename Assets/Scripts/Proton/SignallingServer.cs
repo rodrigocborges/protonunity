@@ -24,7 +24,7 @@ namespace Proton {
 
     public class SignallingServer
     {
-        private const string URL_SERVER = "http://localhost/signalling-server/";//"https://signallingserver.xrodrigobr.repl.co/";
+        private const string URL_SERVER = "https://signallingserver.xrodrigobr.repl.co/";//"https://signallingserver.xrodrigobr.repl.co/";
 
         public List<SignallingServerPeer> AllPeers { get; set; } = new List<SignallingServerPeer>();
 
@@ -83,6 +83,17 @@ namespace Proton {
                         callbackGet(AllPeers);
                     }
                     // log(response.Text, false);
+                });
+            }
+            catch(System.Exception ex){
+                log(ex.Message, true);
+            }
+        }
+
+        public void SendConnectionStats(string data){
+            try {
+                RestClient.Get(string.Format("{0}?connection_stats={1}", URL_SERVER, data)).Then(response => {
+                    
                 });
             }
             catch(System.Exception ex){

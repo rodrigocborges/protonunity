@@ -22,6 +22,8 @@ namespace Proton.Sync {
 
         private const int MAX_CAPACITY_LISTS = 100;
 
+        private Vector3 _lastScale = Vector3.zero;
+
         //FIXME: Caso haja já um valor nessa lista simplesmente não envia, só após dar clear (problema notável na escala)
 
         void ClearBufferSyncLists(){
@@ -38,6 +40,8 @@ namespace Proton.Sync {
         void Awake(){
             _identity = GetComponent<EntityIdentity>();
             _sendDataManager = new SendData(Delay);
+
+            _lastScale = transform.localScale;
         }
 
         void Start()
@@ -73,11 +77,17 @@ namespace Proton.Sync {
         {
             _sendDataManager.Update(() =>
             {
-                if(!_scales.Contains(transform.localScale))
+                /*if(!_scales.Contains(transform.localScale))
                 {
                     _scales.Add(transform.localScale);
                     // _sendDataScale.Add(transform.localScale);
                     _sendDataVector.Add(transform.localScale);
+                    _sendDataManager.Setup(SendDataType.Scale, _sendDataVector);
+                }*/
+
+                if(!MathUtil.Vector3Equal(_lastScale, transform.localScale)){
+                    _lastScale = transform.localScale;
+                    _sendDataVector.Add(_lastScale);
                     _sendDataManager.Setup(SendDataType.Scale, _sendDataVector);
                 }
             });
@@ -89,7 +99,6 @@ namespace Proton.Sync {
             {
                 if(!_rotations.Contains(transform.eulerAngles)){
                     _rotations.Add(transform.eulerAngles);
-                    // _sendDataRotation.Add(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z);
                     _sendDataVector.Add(transform.eulerAngles);
                     _sendDataManager.Setup(SendDataType.Rotation, _sendDataVector);
                 }
@@ -102,7 +111,6 @@ namespace Proton.Sync {
             {
                 if(!_positions.Contains(transform.position)){
                     _positions.Add(transform.position);
-                    // _sendDataPosition.Add(transform.position);
                     _sendDataVector.Add(transform.position);
                     _sendDataManager.Setup(SendDataType.Position, _sendDataVector);
                 }

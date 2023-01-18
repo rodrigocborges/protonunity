@@ -13,7 +13,8 @@ public static class UnityPeerJS
         ConnClosed = 4,
         PeerDisconnected = 5,
         PeerClosed = 6,
-        Error = 7
+        Error = 7,
+        PeerList = 8
     }
 
     public class Peer
@@ -42,9 +43,9 @@ public static class UnityPeerJS
             return UnityPeerJS.GetLocalPeerID(_peerIndex);
         }
 
-        public void Connect(string remoteId)
+        public void Connect(string remoteId, string roomName = null)
         {
-            UnityPeerJS.Connect(_peerIndex, remoteId);
+            UnityPeerJS.Connect(_peerIndex, remoteId, roomName);
         }
 
         public void Disconnect()
@@ -122,7 +123,7 @@ public static class UnityPeerJS
     public static extern string GetLocalPeerID(int peerInstance);
 
     [DllImport("__Internal")]
-    public static extern void Connect(int peerInstance, string remoteId);
+    public static extern void Connect(int peerInstance, string remoteId, string roomName);
 
     [DllImport("__Internal")]
     public static extern void Send(int peerInstance, int connInstance, string ptr, int length);
@@ -151,7 +152,7 @@ public static class UnityPeerJS
         throw new NotImplementedException();
     }
 
-    public static void Connect(int peerInstance, string remoteIdStr)
+    public static void Connect(int peerInstance, string remoteIdStr, string roomName)
     {
         throw new NotImplementedException();
     }

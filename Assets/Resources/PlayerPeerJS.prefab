@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 438108299109660648}
   - component: {fileID: 1302331006893658624}
   - component: {fileID: 3469826182007932636}
+  - component: {fileID: 2201741619910642306}
   - component: {fileID: 4666843993570786692}
   m_Layer: 0
   m_Name: Nickname
@@ -173,6 +174,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 1302331006893658624}
   m_maskType: 0
+--- !u!114 &2201741619910642306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4583830567990173041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1142702bcb049e94f9b2e9ea8864c3f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefix: Player
+  minValue: 1000
+  maxValue: 9999
 --- !u!114 &4666843993570786692
 MonoBehaviour:
   m_ObjectHideFlags: 0

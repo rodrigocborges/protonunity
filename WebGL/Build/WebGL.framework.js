@@ -1171,29 +1171,29 @@ var tempDouble;
 var tempI64;
 
 var ASM_CONSTS = {
- 3897308: function() {
+ 3897228: function() {
   Module["emscripten_get_now_backup"] = performance.now;
  },
- 3897363: function($0) {
+ 3897283: function($0) {
   performance.now = function() {
    return $0;
   };
  },
- 3897411: function($0) {
+ 3897331: function($0) {
   performance.now = function() {
    return $0;
   };
  },
- 3897459: function() {
+ 3897379: function() {
   performance.now = Module["emscripten_get_now_backup"];
  },
- 3897514: function() {
+ 3897434: function() {
   return Module.webglContextAttributes.premultipliedAlpha;
  },
- 3897575: function() {
+ 3897495: function() {
   return Module.webglContextAttributes.preserveDrawingBuffer;
  },
- 3897639: function() {
+ 3897559: function() {
   return Module.webglContextAttributes.powerPreference;
  }
 };
@@ -2968,6 +2968,7 @@ function _JS_WebRequest_SetTimeout(requestId, timeout) {
 function _OpenPeer() {
  var peer = {
   peer: new Peer(null, {
+   host: "proton-server.xrodrigobr.repl.co",
    debug: 2
   }),
   initialized: false,
@@ -3020,6 +3021,15 @@ function _OpenPeer() {
   window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
    Code: 1
   }));
+  setInterval(function() {
+   peer.peer.listAllPeers(function(peerList) {
+    console.log("listAllPeers() ->", peerList);
+    window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+     Code: 8,
+     Data: JSON.stringify(peerList)
+    }));
+   });
+  }, 5e3);
  });
  peer.peer.on("connection", peer.newConnection);
  peer.peer.on("disconnected", function() {
