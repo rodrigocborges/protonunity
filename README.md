@@ -20,5 +20,11 @@ Propor um framework open source para multiplayer online de jogos na Unity usando
 - Está sendo feito um servidor de sinalização simples que para cada peer novo conectado é enviado esse seu ID para o servidor, que salva essa informação num arquivo JSON para enviar para todos os peers conectados para realizar conexões entre si. Nenhum dado do jogo é enviado para ele, apenas sinalização (encontrar os outros peers na rede).
 - Plataforma para fazer o build: apenas WebGL
 
+## Documentação
+Para acessar a documentação, acesse o link: <https://protonunity.readthedocs.io>
+
+## Observação
+Este projeto contém também um exemplo de jogo usando o Photon Unity Networking para caráter de testes entre frameworks e para construções de funções análogas.
+
 ## Créditos
 Desenvolvido por Rodrigo Borges - curso de Engenharia de Computação na Universidade Federal do Rio Grande (FURG)
