@@ -8,57 +8,28 @@ namespace Proton.Sync {
         [SerializeField] private EntityIdentity entityIdentity;
         [SerializeField] private string dataKey;
         private TMPro.TMP_Text textObject;
-        private string _currentText;
-
-        //FIXME: Remover isso depois!
-        // private string onlyTestText = "";
-
         private SendData _sendData;
         private SendDataGeneric _sendDataGeneric;
-        private string currentLocalText = "";
-
-        void Awake()
-        {
+        
+        void Awake(){
             textObject = GetComponent<TMPro.TMP_Text>();
-            gameObject.name = string.Format("Text_{0}_{1}", entityIdentity.GetPeerID(), dataKey);
-    
-            //FIXME: Remover isso depois!
-            // onlyTestText = "User_" + Random.Range(1000, 9999);
         }
 
-        void Start(){            
-            currentLocalText = textObject.text;
-            
-            _sendData = new SendData(2f);
-            _sendDataGeneric = new SendDataGeneric(entityIdentity.GetPeerID());    
+        void Start()
+        {
+            gameObject.name = string.Format("Text_{0}_{1}", entityIdentity.GetPeerID(), dataKey);
+            _sendData = new SendData(0.05f); //0.75f ok, 0f ok
+            _sendDataGeneric = new SendDataGeneric(entityIdentity.GetPeerID());
         }
 
         void Update(){
-            _setText(ProtonManager.Instance.GenericDataManager.Get(entityIdentity.GetPeerID(), dataKey)?.ToString());            
-            
             if(!entityIdentity.IsMine() || string.IsNullOrEmpty(entityIdentity.GetPeerID()))
                 return;
 
-            if(ProtonManager.Instance.GenericDataManager == null)
-                return;    
-                
             _sendData.Update(() => {
-                _sendDataGeneric.Add(dataKey, currentLocalText);
+                _sendDataGeneric.Add(dataKey, textObject.text);
                 _sendData.Setup(SendDataType.GenericData, _sendDataGeneric);
             });
-        }
-
-        private void _setText(string text){
-            if(string.IsNullOrEmpty(text))
-            {
-                textObject.text = currentLocalText;
-                return;
-            }
-            if(_currentText.Equals(text))
-                return;
-
-            _currentText = text;
-            textObject.text = _currentText;
         }
     }
 

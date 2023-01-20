@@ -18,7 +18,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         formConnection.SetActive(false);
         PhotonNetwork.ConnectUsingSettings();   
 
-        usernameField.text = "Usuario_" + Random.Range(1000, 9999);
+        SetRandomUsername();
         roomNameField.text = "dev";
     }
 
@@ -57,14 +57,28 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public void CreateRoom(){
         if(string.IsNullOrEmpty(roomNameField.text))
-            return;
+            roomNameField.text = "dev";
+
+        if(string.IsNullOrEmpty(usernameField.text))
+            SetRandomUsername();
+
+        PhotonNetwork.LocalPlayer.NickName = usernameField.text;
+
         PhotonNetwork.CreateRoom(roomNameField.text, new Photon.Realtime.RoomOptions { IsOpen = true, MaxPlayers = 4 });
     }
 
     public void JoinRoom(){
         if(string.IsNullOrEmpty(roomNameField.text))
-            return;
+            roomNameField.text = "dev";
+
+        if(string.IsNullOrEmpty(usernameField.text))
+            SetRandomUsername();
+
+        PhotonNetwork.LocalPlayer.NickName = usernameField.text;
+
         PhotonNetwork.JoinRoom(roomNameField.text);
     }
+
+    private void SetRandomUsername() => usernameField.text = "Usuario_" + Random.Range(1000, 9999);
 
 }

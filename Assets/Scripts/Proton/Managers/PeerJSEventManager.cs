@@ -21,7 +21,7 @@ public class PeerJSEventManager
         System.Action HandleOnOpen,
         System.Action<UnityPeerJS.Peer.IConnection> HandleOnConnection, 
         System.Action HandleOnDisconnected,
-        System.Action HandleOnClose,
+        System.Action<string> HandleOnClose,
         System.Action<string> HandleOnError
     ){
         UnityPeerJS.PeerEventType localPeerEventType = (UnityPeerJS.PeerEventType)data.Code;
@@ -61,7 +61,8 @@ public class PeerJSEventManager
 
             case UnityPeerJS.PeerEventType.PeerClosed:
             {
-                HandleOnClose();
+                int connectionIndex = data.ConnectionIndex;
+                HandleOnClose(connections[connectionIndex]?.RemoteId);
                 break;
             }
 

@@ -12,6 +12,9 @@ public class RandomText : MonoBehaviour
 
     void Awake(){
         textComponent = GetComponent<TMPro.TMP_Text>();
+    }
+
+    void Start(){
         textComponent.text = string.Format("{0}{1}", (string.IsNullOrEmpty(prefix) ? "" : prefix + "_"), Random.Range(minValue, maxValue));
     }
 }

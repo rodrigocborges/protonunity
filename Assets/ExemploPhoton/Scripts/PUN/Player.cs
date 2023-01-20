@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private Transform firePoint;
     [SerializeField] private float fireRate;
-    [SerializeField] private AudioClip fireSound;
+    [SerializeField] private AudioClip[] fireSound;
     [SerializeField] private float moveSpeed;
     private Rigidbody2D rb;
     private float nextFire = 0;
@@ -34,7 +34,7 @@ public class Player : MonoBehaviour
         if(Input.GetMouseButton(0) && Time.time > nextFire){
             GameObject bullet = PhotonNetwork.Instantiate(bulletPrefab.name, firePoint.position, firePoint.rotation);
             bullet.GetComponent<Bullet>().SetLocalPlayer(localPlayer);
-            AudioUtil.PlayOneShot(audioSource, fireSound);
+            AudioUtil.PlayOneShot(audioSource, fireSound[Random.Range(0, fireSound.Length)]);
             nextFire = Time.time + fireRate;
         }
     }

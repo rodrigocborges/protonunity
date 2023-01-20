@@ -9,6 +9,7 @@ namespace Proton {
     {
         private bool _isMine = false;
         private string _peerID = null;
+        private bool _isMasterClient = false;
         
         public void SetOwner(string peerID, bool isMine){
             _peerID = peerID;
@@ -17,5 +18,9 @@ namespace Proton {
 
         public bool IsMine() => _isMine;
         public string GetPeerID() => _peerID;
+
+        public bool IsMasterClient() => _isMasterClient;
+
+        public void SetIsMasterClient(bool isMasterClient) => _isMasterClient = isMasterClient;
     }
 }

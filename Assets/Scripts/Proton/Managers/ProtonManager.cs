@@ -5,6 +5,7 @@ using TMPro;
 using System.Linq;
 using Proton;
 using Proton.Sync;
+using System.Collections;
 
 [System.Serializable]
 public class ConnectionStatsData {
@@ -37,18 +38,19 @@ public class ProtonManager : MonoBehaviour
     private List<string> connectedPeersIDs = new List<string>();
     private List<string> _peerList = new List<string>();
 
-    private SignallingServer signallingServer;
     private ReceiveData receiveData;
-    public GenericDataManager GenericDataManager;
-
     private PeerJSEventManager peerJSEventManager;
 
-    private float timeToSendConnectionStats = 10;
+    private float timeToSendConnectionStats = 5;
     private float currentTimeToSendConnectionStats = 0;
     private string lastConnectionStatsData = "";
     private bool sendConnectionStats = false;
 
+    private bool selectedMasterClient = false;
+
     public Dictionary<string, GameObject> playersGameObjects = new Dictionary<string, GameObject>();
+
+    public GameObject LocalPlayer;
 
     public void SendToAll(string data){
         if(!_connections.Values.Any())
@@ -57,28 +59,57 @@ public class ProtonManager : MonoBehaviour
         foreach(var connection in _connections.Values){
             if(connection.RemoteId.Equals(peer.GetLocalPeerID()))
                 continue;
+            // _dataToSendAll.Append(data);
             connection.Send(data);
+            // StartCoroutine(SendToAllCoroutine(connection));
         }
     }
 
-    public SyncText FindText(string peerID, string dataKey){
-        GameObject textGameObject = GameObject.Find(string.Format("Text_{0}_{1}", peerID, dataKey));
-        if(textGameObject == null) return null;
-        return textGameObject.GetComponent<SyncText>();
+    private Queue<string> _dataToSendAll = new Queue<string>();
+
+    IEnumerator SendToAllCoroutine(UnityPeerJS.Peer.Connection connection){
+        while(_dataToSendAll.Any())
+        {
+            string lastDataToSend = _dataToSendAll.Dequeue();
+            yield return new WaitForSeconds(1);
+            connection.Send(lastDataToSend);
+        }
+    }
+
+    public GameObject SpawnObject(string peerID, string prefabPath, Vector3 pos, Quaternion rot, bool onlyLocal = false){
+        GameObject spawnedObject = Instantiate(Resources.Load<GameObject>(prefabPath), pos, rot);
+        spawnedObject.name = string.Format("GameObject_{0}", peerID);
+
+        if(onlyLocal){
+            return spawnedObject;
+        }
+
+        SendDataInstantiate _sendDataInstantiate = new SendDataInstantiate(peerID);
+        SendData _sendData = new SendData(0f);
+
+        _sendDataInstantiate.Add(prefabPath, pos, rot);
+        _sendData.Setup(SendDataType.Instantiate, _sendDataInstantiate);
+        return spawnedObject;
+    }
+
+    private Dictionary<string, TMPro.TMP_Text> playersTextGameObjects = new Dictionary<string, TMPro.TMP_Text>();
+
+    public void FindAndSetText(string peerID, string dataKey, string val){
+        string dictKey = peerID + "_" + dataKey;
+        //TODO: Testar cacheamento de texts
+        if(playersTextGameObjects.ContainsKey(dictKey)){
+            playersTextGameObjects[dictKey].text = val;
+        }else {
+            GameObject textGameObject = GameObject.Find(string.Format("Text_{0}_{1}", peerID, dataKey));
+            if(textGameObject == null) return;
+            TMPro.TMP_Text auxText = textGameObject.GetComponent<TMPro.TMP_Text>();
+            auxText.text = val;
+            playersTextGameObjects.Add(dictKey, auxText);
+        }
+        
     }
 
     void CheckNewPeers(){
-        /*signallingServer.CheckAndGetPeers((peers) => {
-            var filteredPeers = peers.Where(x => !x.PeerID.Equals(peer.GetLocalPeerID()));
-            foreach(var p in filteredPeers){
-                //Lista auxiliar para identificar quais peers já foram conectados com o local
-                if(!connectedPeersIDs.Contains(p.PeerID)){
-                    peer.Connect(p.PeerID);
-                    connectedPeersIDs.Add(p.PeerID);
-                }
-            }
-        });*/
-
         if(_peerList == null || !_peerList.Any())
             return;
 
@@ -96,21 +127,22 @@ public class ProtonManager : MonoBehaviour
         Instance = this;
         
         connectionStateText.text = "Aguardando conexão";
+        connectionStatsText.text = "Aguardando estatísticas de conexão...";
 
-        signallingServer = new SignallingServer();
         receiveData = new ReceiveData(this);
         peerJSEventManager = new PeerJSEventManager();
 
         peer = new UnityPeerJS.Peer();
         peer.OnConnection += HandleOnConnection;
         peer.OnOpen += HandleOnOpen;
-        peer.OnClose += HandleOnClose;
+        peer.OnClose += HandleOnCloseLocalPeer;
         peer.OnError += HandleOnError;
         peer.OnDisconnected += HandleOnDisconnected;
     }
     private void HandleOnDisconnected()
     {
         connectionStateText.text = "Desconectado";
+        DestroyPlayerObjects(peer.GetLocalPeerID());
     }
 
     private void HandleOnError(string message)
@@ -118,20 +150,41 @@ public class ProtonManager : MonoBehaviour
         connectionStateText.text = "Erro: " + message;
     }
 
-    private void HandleOnClose()
-    {
+    private void HandleOnCloseLocalPeer() {
         connectionStateText.text = "Conexão finalizada";
+        DestroyPlayerObjects(peer.GetLocalPeerID());
     }
 
+    private void HandleOnClose(string peerID)
+    {
+        connectionStateText.text = "Conexão finalizada";
+        DestroyPlayerObjects(peerID);
+    }
+
+    //TODO: Provisória essa forma de posicao aleatoria, melhorar
     private void SpawnPlayer(string peerID, bool isLocal = false){
         //Evita de spawnar novamente pro mesmo PeerID
         if(playersGameObjects.ContainsKey(peerID))
             return;
-        GameObject spawnedPlayer = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+        GameObject spawnedPlayer = Instantiate(playerPrefab, PlayerNetworkProton.GetRandomSpawnPoint(), Quaternion.identity);
         spawnedPlayer.name = "Player_" + peerID;
         spawnedPlayer.GetComponent<EntityIdentity>().SetOwner(peerID, isLocal);
         playersGameObjects.Add(peerID, spawnedPlayer);
-        GenericDataManager.Setup(peerID, spawnedPlayer);
+
+        if(isLocal)
+            LocalPlayer = spawnedPlayer;
+    }
+
+    private void DestroyPlayerObjects(string peerID){
+        if(string.IsNullOrEmpty(peerID))
+        {
+            Debug.Log("[ProtonManager, DestroyPlayerObjects()]: PeerID is null!");
+            return;
+        }
+        GameObject spawnedPlayer = GameObject.Find("Player_" + peerID);
+        
+        if(spawnedPlayer != null)
+            Destroy(spawnedPlayer);
     }
 
     private void HandleOnOpen()
@@ -142,7 +195,7 @@ public class ProtonManager : MonoBehaviour
 
         SpawnPlayer(peer.GetLocalPeerID(), true);
 
-        InvokeRepeating("CheckNewPeers", 2, 10);
+        InvokeRepeating("CheckNewPeers", 0, 10);
     }
 
     public void Connect(string peerID, string roomName = null){
@@ -155,7 +208,7 @@ public class ProtonManager : MonoBehaviour
     private void OnDestroy(){
         peer.OnConnection -= HandleOnConnection;
         peer.OnOpen -= HandleOnOpen;
-        peer.OnClose -= HandleOnClose;
+        peer.OnClose -= HandleOnCloseLocalPeer;
         peer.OnError -= HandleOnError;
         peer.OnDisconnected -= HandleOnDisconnected;
         peer = null;
@@ -164,8 +217,7 @@ public class ProtonManager : MonoBehaviour
 
     private void HandleOnConnection(UnityPeerJS.Peer.IConnection connection)
     {
-        
-        CheckNewPeers();
+        // CheckNewPeers();
 
         SpawnPlayer(connection.RemoteId);
 
@@ -228,13 +280,26 @@ public class ProtonManager : MonoBehaviour
         _peerList = peerList;
         _numberOfPeers = peerList.Count;
         connectionStateText.text = "Conectado ("+ _numberOfPeers +" jogadores)";
+        CheckAndSetMasterClient();
+    }
+
+    public void CheckAndSetMasterClient(){
+        if(selectedMasterClient)
+            return;
+
+        string peerIDSelected = _peerList[0];
+        if(!playersGameObjects.ContainsKey(peerIDSelected) || playersGameObjects[peerIDSelected] == null)
+            return;
+
+        playersGameObjects[peerIDSelected].GetComponent<EntityIdentity>().SetIsMasterClient(true);
+        selectedMasterClient = true;
     }
 
     // void Update(){
     //     if(sendConnectionStats){
     //         currentTimeToSendConnectionStats += Time.deltaTime;
     //         if(currentTimeToSendConnectionStats >= timeToSendConnectionStats){
-    //             signallingServer.SendConnectionStats(lastConnectionStatsData);
+    //             Debug.Log(lastConnectionStatsData);
     //             currentTimeToSendConnectionStats = 0;
     //         }
     //     }

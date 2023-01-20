@@ -7,6 +7,7 @@ namespace Proton.Sync {
         Position,
         Rotation,
         Scale,
+        PositionAndRotation,
         All
     }
     public class SyncTransform : MonoBehaviour
@@ -23,6 +24,9 @@ namespace Proton.Sync {
         private const int MAX_CAPACITY_LISTS = 100;
 
         private Vector3 _lastScale = Vector3.zero;
+        private Vector3 _lastRotation = Vector3.zero;
+        private Vector3 _lastPosition = Vector3.zero;
+
 
         //FIXME: Caso haja já um valor nessa lista simplesmente não envia, só após dar clear (problema notável na escala)
 
@@ -42,12 +46,14 @@ namespace Proton.Sync {
             _sendDataManager = new SendData(Delay);
 
             _lastScale = transform.localScale;
+            _lastPosition = transform.position;
+            _lastRotation = transform.eulerAngles;
         }
 
         void Start()
         {
             _sendDataVector = new SendDataVector(_identity.GetPeerID());
-            InvokeRepeating("ClearBufferSyncLists", 0, 60); //TODO: Conferir esse tempo
+            // InvokeRepeating("ClearBufferSyncLists", 0, 60); //TODO: Conferir esse tempo
         }
 
         void Update()
@@ -65,6 +71,10 @@ namespace Proton.Sync {
                 case SyncTransformType.Scale:
                     _syncScale();
                     break;
+                case SyncTransformType.PositionAndRotation:
+                    _syncPosition();
+                    _syncRotation();
+                break;
                 case SyncTransformType.All:
                     _syncPosition();
                     _syncRotation();
@@ -97,9 +107,9 @@ namespace Proton.Sync {
         {
             _sendDataManager.Update(() =>
             {
-                if(!_rotations.Contains(transform.eulerAngles)){
-                    _rotations.Add(transform.eulerAngles);
-                    _sendDataVector.Add(transform.eulerAngles);
+                if(!MathUtil.Vector3Equal(_lastRotation, transform.eulerAngles)){
+                    _lastRotation = transform.eulerAngles;
+                    _sendDataVector.Add(_lastRotation);
                     _sendDataManager.Setup(SendDataType.Rotation, _sendDataVector);
                 }
             });
@@ -109,9 +119,9 @@ namespace Proton.Sync {
         {
             _sendDataManager.Update(() =>
             {
-                if(!_positions.Contains(transform.position)){
-                    _positions.Add(transform.position);
-                    _sendDataVector.Add(transform.position);
+                if(!MathUtil.Vector3Equal(_lastPosition, transform.position)){
+                    _lastPosition = transform.position;
+                    _sendDataVector.Add(_lastPosition);
                     _sendDataManager.Setup(SendDataType.Position, _sendDataVector);
                 }
             });

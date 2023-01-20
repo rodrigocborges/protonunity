@@ -65,7 +65,7 @@ public static class UnityPeerJS
             string RemoteId { get; }
 
             event Action<string> OnData;
-            event Action OnClose;
+            event Action<string> OnClose;
 
             void Send(string str);
             void Close();
@@ -83,7 +83,7 @@ public static class UnityPeerJS
             }
 
             public event Action<string> OnData;
-            public event Action OnClose;
+            public event Action<string> OnClose;
 
             public Peer Peer { get; set;  }
             public string RemoteId { get; set; }
@@ -107,7 +107,7 @@ public static class UnityPeerJS
             public void EmitOnClose()
             {
                 if (OnClose != null)
-                    OnClose();
+                    OnClose(RemoteId);
             }
         }
     }

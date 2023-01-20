@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 
-public class CameraShake : MonoBehaviourPun
+public class CameraShake : MonoBehaviour
 {
     [SerializeField] private Transform cameraTransform;
     private Vector3 startCameraPos;
@@ -14,11 +14,6 @@ public class CameraShake : MonoBehaviourPun
 
     private bool canShake = false;
     private float _shakeTimer;
-
-    void Awake(){
-        if(!photonView.IsMine)
-            enabled = false;
-    }
  
     void Start()
     {
@@ -30,10 +25,12 @@ public class CameraShake : MonoBehaviourPun
     }
 
     void Update()
-    {
+    {   
+        #if UNITY_EDITOR
         if(Input.GetKeyDown(KeyCode.Space))
             ShakeCamera();
-
+        #endif
+        
         if (canShake)
         {
             StartCameraShakeEffect();

@@ -15,6 +15,7 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
+using Newtonsoft.Json;
 
 namespace Photon.Pun.UtilityScripts
 {
@@ -53,7 +54,6 @@ namespace Photon.Pun.UtilityScripts
         /// <summary>Unity GUI Window ID (must be unique or will cause issues).</summary>
         public int WindowId = 100;
 
-
         public void Start()
         {
             if (this.statsRect.x <= 0)
@@ -87,6 +87,16 @@ namespace Photon.Pun.UtilityScripts
             this.statsRect = GUILayout.Window(this.WindowId, this.statsRect, this.TrafficStatsWindow, "Messages (shift+tab)");
         }
 
+        [System.Serializable]
+        public class PhotonStatsData {
+            public ExitGames.Client.Photon.TrafficStats TrafficStatsIncoming { get; set; }
+            public ExitGames.Client.Photon.TrafficStats TrafficStatsOutgoing { get; set; }
+            public int RoundTripTime { get;set; }
+            public int RoundTripTimeVariance { get; set; }
+            public long TimeElapsedInMs { get; set; }
+        }
+
+        private float currentTimeMeasuring = 0;
         public void TrafficStatsWindow(int windowID)
         {
             bool statsToLog = false;
@@ -165,6 +175,19 @@ namespace Photon.Pun.UtilityScripts
             }
 
             GUI.DragWindow();
+
+            currentTimeMeasuring += Time.deltaTime;
+            if(currentTimeMeasuring >= 5){
+                PhotonStatsData photonStatsData = new PhotonStatsData {
+                    TrafficStatsIncoming = PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsIncoming,
+                    TrafficStatsOutgoing = PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsOutgoing,
+                    RoundTripTime = PhotonNetwork.NetworkingClient.LoadBalancingPeer.RoundTripTime,
+                    RoundTripTimeVariance = PhotonNetwork.NetworkingClient.LoadBalancingPeer.RoundTripTimeVariance,
+                    TimeElapsedInMs = elapsedMs
+                };
+                Debug.Log(JsonConvert.SerializeObject(photonStatsData));
+                currentTimeMeasuring = 0;
+            }
         }
     }
 }

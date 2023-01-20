@@ -125,7 +125,8 @@ var LibraryUnityPeerJS = {
         var idstr = UTF8ToString(id);
         var peer = UnityPeerJS.peers[peerInstance];
         var roomNameStr = UTF8ToString(roomName);
-        peer.newConnection(peer.peer.connect(idstr, { label: roomNameStr }));
+        //serialization: binary (default)
+        peer.newConnection(peer.peer.connect(idstr, { label: roomNameStr, serialization: 'json' }));
     },
 
     Send: function (peerInstance, connInstance, data, length) {

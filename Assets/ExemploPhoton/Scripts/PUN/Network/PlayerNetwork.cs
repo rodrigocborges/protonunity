@@ -9,7 +9,11 @@ public class PlayerNetwork : MonoBehaviourPun
     [SerializeField] private Health health;
     [SerializeField] private Score score;
 
+    [SerializeField] private TMPro.TMP_Text nametagText;
+
     void Start(){        
+        nametagText.text = photonView.Owner.NickName.Length < 9 ? photonView.Owner.NickName : photonView.Owner.NickName.Substring(0, 9); //Texto nao pode passar de 10 caracteres para nao sair do player
+        
         if(!photonView.IsMine)
             return;
     }
@@ -31,11 +35,5 @@ public class PlayerNetwork : MonoBehaviourPun
 
         playerBehaviour.Move();
     }
-
-    // [PunRPC]
-    // public void RpcTakeDamage(int damage, int photonViewIDPlayer){
-    //     health.TakeDamage(damage, photonViewIDPlayer);
-    // }
-
     
 }

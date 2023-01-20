@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using Photon.Pun;
 using UnityEngine;
 
-public class RotatorObject : MonoBehaviourPun
+public class RotatorObject : MonoBehaviour
 {
     [SerializeField] private float speed;
     
