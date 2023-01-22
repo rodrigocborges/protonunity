@@ -44,13 +44,13 @@ var LibraryUnityPeerJS = {
                                 Object.keys(report).forEach((statName) => {
                                     connectionStatsData[statName] = report[statName];
                                 });
-                                window.myGameInstance.SendMessage('PeerJSManager', 'ConnectionStatsManager', JSON.stringify(connectionStatsData));
+                                window.myGameInstance.SendMessage('ProtonManager', 'ConnectionStatsManager', JSON.stringify(connectionStatsData));
                             }                 
                         });
                     });
                 }
 
-                window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 2, ConnectionIndex: connInstance, PeerID: conn.peer }));
+                window.myGameInstance.SendMessage('ProtonManager', 'EventManager', JSON.stringify({ Code: 2, ConnectionIndex: connInstance, PeerID: conn.peer }));
                 // console.log({ method: 'Callback Connection Opened', conn });
 
                 _getStatsOfConnection();
@@ -59,24 +59,24 @@ var LibraryUnityPeerJS = {
 
                     _getStatsOfConnection();
 
-                    window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 3, ConnectionIndex: connInstance, Data: data }));
+                    window.myGameInstance.SendMessage('ProtonManager', 'EventManager', JSON.stringify({ Code: 3, ConnectionIndex: connInstance, Data: data }));
 
                 });
             });
 
             conn.on('close', function () {
-                window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 4, ConnectionIndex: connInstance }));
+                window.myGameInstance.SendMessage('ProtonManager', 'EventManager', JSON.stringify({ Code: 4, ConnectionIndex: connInstance }));
             });
         };
 
         peer.peer.on('open', function (id) {
             peer.localId = id;
             peer.initialized = true;
-            window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 1 }));
+            window.myGameInstance.SendMessage('ProtonManager', 'EventManager', JSON.stringify({ Code: 1 }));
 
             setInterval(function() {
                 peer.peer.listAllPeers(function(peerList) {
-                    window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 8, Data: JSON.stringify(peerList) }));
+                    window.myGameInstance.SendMessage('ProtonManager', 'EventManager', JSON.stringify({ Code: 8, Data: JSON.stringify(peerList) }));
                 });
             }, 5000);
         });
@@ -84,15 +84,15 @@ var LibraryUnityPeerJS = {
         peer.peer.on('connection', peer.newConnection);
         
         peer.peer.on('disconnected', function () { 
-            window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 5 }));
+            window.myGameInstance.SendMessage('ProtonManager', 'EventManager', JSON.stringify({ Code: 5 }));
         });
         
         peer.peer.on('close', function () { 
-            window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 6 }));
+            window.myGameInstance.SendMessage('ProtonManager', 'EventManager', JSON.stringify({ Code: 6 }));
         });
 
         peer.peer.on('error', function (err) { 
-            window.myGameInstance.SendMessage('PeerJSManager', 'EventManager', JSON.stringify({ Code: 7, Data: err.type }));
+            window.myGameInstance.SendMessage('ProtonManager', 'EventManager', JSON.stringify({ Code: 7, Data: err.type }));
         });
 
         return peerInstance;

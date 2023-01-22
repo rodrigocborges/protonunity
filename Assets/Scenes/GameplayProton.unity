@@ -2126,6 +2126,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Padding: {x: -8, y: -5, z: -8, w: -5}
   m_Softness: {x: 0, y: 0}
+--- !u!1 &991605619
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 991605621}
+  - component: {fileID: 991605620}
+  m_Layer: 0
+  m_Name: ProtonStatsServer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &991605620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 991605619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49551aa0c3e9e044380ae2ff6e1f3fc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  statsOn: 1
+--- !u!4 &991605621
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 991605619}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 13
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1135200288
 GameObject:
   m_ObjectHideFlags: 0
@@ -2955,7 +3000,7 @@ GameObject:
   - component: {fileID: 1501601413}
   - component: {fileID: 1501601412}
   m_Layer: 0
-  m_Name: PeerJSManager
+  m_Name: ProtonManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2976,6 +3021,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 1439839051569416183, guid: b07c59923ec6a664bad8248658145dab, type: 3}
   connectionStateText: {fileID: 1135200290}
   connectionStatsText: {fileID: 248614164}
+  LocalPlayer: {fileID: 0}
 --- !u!4 &1501601413
 Transform:
   m_ObjectHideFlags: 0

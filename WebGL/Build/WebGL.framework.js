@@ -1171,29 +1171,29 @@ var tempDouble;
 var tempI64;
 
 var ASM_CONSTS = {
- 3898108: function() {
+ 3898972: function() {
   Module["emscripten_get_now_backup"] = performance.now;
  },
- 3898163: function($0) {
+ 3899027: function($0) {
   performance.now = function() {
    return $0;
   };
  },
- 3898211: function($0) {
+ 3899075: function($0) {
   performance.now = function() {
    return $0;
   };
  },
- 3898259: function() {
+ 3899123: function() {
   performance.now = Module["emscripten_get_now_backup"];
  },
- 3898314: function() {
+ 3899178: function() {
   return Module.webglContextAttributes.premultipliedAlpha;
  },
- 3898375: function() {
+ 3899239: function() {
   return Module.webglContextAttributes.preserveDrawingBuffer;
  },
- 3898439: function() {
+ 3899303: function() {
   return Module.webglContextAttributes.powerPreference;
  }
 };
@@ -2992,12 +2992,12 @@ function _OpenPeer() {
        Object.keys(report).forEach(statName => {
         connectionStatsData[statName] = report[statName];
        });
-       window.myGameInstance.SendMessage("PeerJSManager", "ConnectionStatsManager", JSON.stringify(connectionStatsData));
+       window.myGameInstance.SendMessage("ProtonManager", "ConnectionStatsManager", JSON.stringify(connectionStatsData));
       }
      });
     });
    }
-   window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+   window.myGameInstance.SendMessage("ProtonManager", "EventManager", JSON.stringify({
     Code: 2,
     ConnectionIndex: connInstance,
     PeerID: conn.peer
@@ -3005,7 +3005,7 @@ function _OpenPeer() {
    _getStatsOfConnection();
    conn.on("data", function(data) {
     _getStatsOfConnection();
-    window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+    window.myGameInstance.SendMessage("ProtonManager", "EventManager", JSON.stringify({
      Code: 3,
      ConnectionIndex: connInstance,
      Data: data
@@ -3013,7 +3013,7 @@ function _OpenPeer() {
    });
   });
   conn.on("close", function() {
-   window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+   window.myGameInstance.SendMessage("ProtonManager", "EventManager", JSON.stringify({
     Code: 4,
     ConnectionIndex: connInstance
    }));
@@ -3022,12 +3022,12 @@ function _OpenPeer() {
  peer.peer.on("open", function(id) {
   peer.localId = id;
   peer.initialized = true;
-  window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+  window.myGameInstance.SendMessage("ProtonManager", "EventManager", JSON.stringify({
    Code: 1
   }));
   setInterval(function() {
    peer.peer.listAllPeers(function(peerList) {
-    window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+    window.myGameInstance.SendMessage("ProtonManager", "EventManager", JSON.stringify({
      Code: 8,
      Data: JSON.stringify(peerList)
     }));
@@ -3036,17 +3036,17 @@ function _OpenPeer() {
  });
  peer.peer.on("connection", peer.newConnection);
  peer.peer.on("disconnected", function() {
-  window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+  window.myGameInstance.SendMessage("ProtonManager", "EventManager", JSON.stringify({
    Code: 5
   }));
  });
  peer.peer.on("close", function() {
-  window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+  window.myGameInstance.SendMessage("ProtonManager", "EventManager", JSON.stringify({
    Code: 6
   }));
  });
  peer.peer.on("error", function(err) {
-  window.myGameInstance.SendMessage("PeerJSManager", "EventManager", JSON.stringify({
+  window.myGameInstance.SendMessage("ProtonManager", "EventManager", JSON.stringify({
    Code: 7,
    Data: err.type
   }));

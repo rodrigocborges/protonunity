@@ -3,13 +3,14 @@ using UnityEngine;
 using Newtonsoft.Json;
 using TMPro;
 using System.Linq;
-using Proton;
-using Proton.Sync;
 using System.Collections;
+
+using Proton;
+using Proton.Stats;
 
 [System.Serializable]
 public class ConnectionStatsData {
-    public string Type { get; set; }
+    // public string Type { get; set; }
     public int PacketsSent { get; set; }
     public int PacketsReceived { get; set; }
     public int BytesSent { get; set; }
@@ -17,6 +18,7 @@ public class ConnectionStatsData {
     public float TotalRoundTripTime { get; set; }
     public float CurrentRoundTripTime { get; set; }
     public long Timestamp { get; set; }
+    public string PeerID { get; set; }
 }
 
 public class ProtonManager : MonoBehaviour
@@ -225,6 +227,8 @@ public class ProtonManager : MonoBehaviour
 
         connection.OnData += HandleOnData;
         connection.OnClose += HandleOnClose;
+
+        ProtonStatsServer.Instance?.Initialize();
     }
 
     private void HandleOnData(string data) => receiveData.Handle(data);
@@ -262,6 +266,8 @@ public class ProtonManager : MonoBehaviour
         if(connectionStatsData == null)
             return;
 
+        connectionStatsData.PeerID = peer.GetLocalPeerID();
+
         connectionStatsText.text = string.Format("Pacotes enviados: {0}\n", connectionStatsData.PacketsSent);
         connectionStatsText.text += string.Format("Pacotes recebidos: {0}\n", connectionStatsData.PacketsReceived);
         connectionStatsText.text += string.Format("Bytes enviados: {0}\n", connectionStatsData.BytesSent);
@@ -270,10 +276,12 @@ public class ProtonManager : MonoBehaviour
         connectionStatsText.text += string.Format("TotalRoundTripTime: {0}ms\n", connectionStatsData.TotalRoundTripTime);
         connectionStatsText.text += string.Format("Número de conexões: {0}\n", _connections.Count);
 
-        // if(!sendConnectionStats)
-        //     sendConnectionStats = true;
+        if(ProtonStatsServer.Instance == null)
+            return;
 
-        // lastConnectionStatsData = JsonConvert.SerializeObject(connectionStatsData);
+        sendConnectionStats = ProtonStatsServer.Instance.IsActived();
+        if(sendConnectionStats)
+            lastConnectionStatsData = JsonConvert.SerializeObject(connectionStatsData);
     }
 
     public void SetPeerList(List<string> peerList){
@@ -295,13 +303,14 @@ public class ProtonManager : MonoBehaviour
         selectedMasterClient = true;
     }
 
-    // void Update(){
-    //     if(sendConnectionStats){
-    //         currentTimeToSendConnectionStats += Time.deltaTime;
-    //         if(currentTimeToSendConnectionStats >= timeToSendConnectionStats){
-    //             Debug.Log(lastConnectionStatsData);
-    //             currentTimeToSendConnectionStats = 0;
-    //         }
-    //     }
-    // }
+    void Update(){
+        if(sendConnectionStats){
+            currentTimeToSendConnectionStats += Time.deltaTime;
+            if(currentTimeToSendConnectionStats >= timeToSendConnectionStats){
+                ProtonStatsServer.Instance.SetSerializedStats(lastConnectionStatsData);
+                ProtonStatsServer.Instance.Send();
+                currentTimeToSendConnectionStats = 0;
+            }
+        }
+    }
 }
