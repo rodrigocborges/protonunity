@@ -44,6 +44,13 @@ var LibraryUnityPeerJS = {
                                 Object.keys(report).forEach((statName) => {
                                     connectionStatsData[statName] = report[statName];
                                 });
+                                const packetsSent = parseFloat(connectionStatsData['packetsSent']);
+                                const packetsReceived = parseFloat(connectionStatsData['packetsReceived']);
+                                if(packetsSent == 0){
+                                    connectionStatsData['packetsLost'] = 0;
+                                }else {
+                                    connectionStatsData['packetsLost'] = ((packetsSent - packetsReceived) / packetsSent) * 100.0;
+                                }
                                 window.myGameInstance.SendMessage('ProtonManager', 'ConnectionStatsManager', JSON.stringify(connectionStatsData));
                             }                 
                         });

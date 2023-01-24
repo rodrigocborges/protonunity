@@ -36,8 +36,7 @@ namespace Proton {
             public Quaternion GetInstantiateRotation() {
                 if(DataType != SendDataType.Instantiate)
                     return Quaternion.identity;
-
-                return Quaternion.Euler(float.Parse(Data[4]), float.Parse(Data[5]), float.Parse(Data[6]));
+                return new Quaternion(float.Parse(Data[4]), float.Parse(Data[5]), float.Parse(Data[6]), float.Parse(Data[7]));
             }
 
             public string GetGenericDataKey() {

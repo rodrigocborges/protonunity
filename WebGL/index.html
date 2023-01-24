@@ -25,35 +25,6 @@
       </div>
     </div>
     <script>
-      //https://stackoverflow.com/questions/9804777/how-to-test-if-a-string-is-json-or-not
-      function isJson(item) {
-          item = typeof item !== "string"
-              ? JSON.stringify(item)
-              : item;
-
-          try {
-              item = JSON.parse(item);
-          } catch (e) {
-              return false;
-          }
-
-          if (typeof item === "object" && item !== null) {
-              return true;
-          }
-
-          return false;
-      }
-      
-      //PARA DEBUG
-      var debugStore = [];
-      var oldf = console.log;
-      console.log = function(){
-        if(isJson(arguments[0])){
-          debugStore.push(arguments[0]);
-        }
-        oldf.apply(console, arguments);
-      }
-
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");

@@ -1171,29 +1171,29 @@ var tempDouble;
 var tempI64;
 
 var ASM_CONSTS = {
- 3898972: function() {
+ 3898988: function() {
   Module["emscripten_get_now_backup"] = performance.now;
  },
- 3899027: function($0) {
+ 3899043: function($0) {
   performance.now = function() {
    return $0;
   };
  },
- 3899075: function($0) {
+ 3899091: function($0) {
   performance.now = function() {
    return $0;
   };
  },
- 3899123: function() {
+ 3899139: function() {
   performance.now = Module["emscripten_get_now_backup"];
  },
- 3899178: function() {
+ 3899194: function() {
   return Module.webglContextAttributes.premultipliedAlpha;
  },
- 3899239: function() {
+ 3899255: function() {
   return Module.webglContextAttributes.preserveDrawingBuffer;
  },
- 3899303: function() {
+ 3899319: function() {
   return Module.webglContextAttributes.powerPreference;
  }
 };
@@ -2992,6 +2992,13 @@ function _OpenPeer() {
        Object.keys(report).forEach(statName => {
         connectionStatsData[statName] = report[statName];
        });
+       const packetsSent = parseFloat(connectionStatsData["packetsSent"]);
+       const packetsReceived = parseFloat(connectionStatsData["packetsReceived"]);
+       if (packetsSent == 0) {
+        connectionStatsData["packetsLost"] = 0;
+       } else {
+        connectionStatsData["packetsLost"] = (packetsSent - packetsReceived) / packetsSent * 100;
+       }
        window.myGameInstance.SendMessage("ProtonManager", "ConnectionStatsManager", JSON.stringify(connectionStatsData));
       }
      });

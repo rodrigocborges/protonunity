@@ -32,7 +32,7 @@ namespace Proton {
             _rotation = rot;
         }
 
-        public string SerializeData() => string.Format("{0}:{1};{2};{3};{4};{5};{6};{7}", _peerID, _prefabPath, _position.x, _position.y, _position.z, _rotation.x, _rotation.y, _rotation.z);
+        public string SerializeData() => string.Format("{0}:{1};{2};{3};{4};{5};{6};{7};{8}", _peerID, _prefabPath, _position.x, _position.y, _position.z, _rotation.x, _rotation.y, _rotation.z, _rotation.w);
     }
 
     public class SendDataGeneric : ISendData {

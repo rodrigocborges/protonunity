@@ -212,9 +212,6 @@ MonoBehaviour:
   firePoint: {fileID: 1439839052332551937}
   fireRate: 0.18
   fireSound:
-  - {fileID: 8300000, guid: c0b8bbee32b765b47b7d2b0565fbdd1d, type: 3}
-  - {fileID: 8300000, guid: fd106c40110e1ae499511bf6f018c948, type: 3}
-  - {fileID: 8300000, guid: 6ed3f0a52f29b9b45a3ba7e213ba1a89, type: 3}
   - {fileID: 8300000, guid: b05e7d9bec00ab4489c54cc89aef140c, type: 3}
   - {fileID: 8300000, guid: 0eb197432da343a4984741dd16448877, type: 3}
   moveSpeed: 12

@@ -53,7 +53,7 @@ public class PlayerNetworkProton : MonoBehaviour
 
     public void Fire(GameObject localPlayer){
         if(Input.GetMouseButton(0) && Time.time > nextFire){
-            GameObject bullet = ProtonManager.Instance.SpawnObject(entityIdentity.GetPeerID(), "BulletProton", firePoint.position, Quaternion.FromToRotation(lookPosition, Vector3.left));
+            GameObject bullet = ProtonManager.Instance.SpawnObject(entityIdentity.GetPeerID(), "BulletProton", firePoint.position, firePoint.rotation);
             bullet.GetComponent<BulletNetworkProton>().SetLocalPlayer(localPlayer);
             AudioUtil.PlayOneShot(audioSource, fireSound[Random.Range(0, fireSound.Length)]);
             nextFire = Time.time + fireRate;
@@ -81,9 +81,6 @@ public class PlayerNetworkProton : MonoBehaviour
     }
 
     public void TakeDamage(int val){
-        if(!entityIdentity.IsMine())
-            return;
-
         health -= val;
         if(health <= 0){
             health = startHealth;

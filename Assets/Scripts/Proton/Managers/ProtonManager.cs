@@ -19,6 +19,7 @@ public class ConnectionStatsData {
     public float CurrentRoundTripTime { get; set; }
     public long Timestamp { get; set; }
     public string PeerID { get; set; }
+    public float PacketsLost { get; set; }
 }
 
 public class ProtonManager : MonoBehaviour
@@ -272,8 +273,8 @@ public class ProtonManager : MonoBehaviour
         connectionStatsText.text += string.Format("Pacotes recebidos: {0}\n", connectionStatsData.PacketsReceived);
         connectionStatsText.text += string.Format("Bytes enviados: {0}\n", connectionStatsData.BytesSent);
         connectionStatsText.text += string.Format("Bytes recebidos: {0}\n", connectionStatsData.BytesReceived);
-        connectionStatsText.text += string.Format("Ping: {0}ms\n", connectionStatsData.CurrentRoundTripTime);
-        connectionStatsText.text += string.Format("TotalRoundTripTime: {0}ms\n", connectionStatsData.TotalRoundTripTime);
+        connectionStatsText.text += string.Format("Ping: {0}ms\n", (connectionStatsData.CurrentRoundTripTime*1000));
+        connectionStatsText.text += string.Format("Perda de pacotes: {0}%\n", connectionStatsData.PacketsLost.ToString("F"));
         connectionStatsText.text += string.Format("Número de conexões: {0}\n", _connections.Count);
 
         if(ProtonStatsServer.Instance == null)

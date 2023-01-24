@@ -21,6 +21,9 @@ namespace Proton {
 
         public bool IsMasterClient() => _isMasterClient;
 
-        public void SetIsMasterClient(bool isMasterClient) => _isMasterClient = isMasterClient;
+        public void SetIsMasterClient(bool isMasterClient){
+            _isMasterClient = isMasterClient;
+            Debug.Log("Setting the master client: " + _peerID);
+        }
     }
 }
