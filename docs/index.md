@@ -2,8 +2,8 @@
 # Documentação Proton
 
 Framework open source (<https://github.com/rodrigocborges/protonunity>) para desenvolvimento de jogos exportados 
-para WebGL online usando a tecnologia WebRTC com a Unity. Portanto os jogos todos têm seu build focados somente 
-para web.
+para **WebGL** online usando a tecnologia WebRTC com a Unity. **Portanto os jogos todos têm seu build focados somente 
+para web.**
 
 ## O que é WebRTC?
 WebRTC é uma tecnologia que permite a comunicação em tempo real entre diferentes dispositivos na internet. Ele foi desenvolvido para permitir a criação de aplicações de vídeo e voz em tempo real sem a necessidade de plugins ou aplicativos adicionais. WebRTC usa protocolos padrão da internet para transmitir dados de áudio e vídeo de maneira segura e eficiente, o que o torna uma opção popular para aplicativos de mensagens instantâneas, videoconferências e chamadas de voz. Ele também pode ser usado para compartilhar arquivos e dados em tempo real entre dispositivos, como a transferência de arquivos entre usuários.
@@ -23,9 +23,14 @@ Com isso você já terá todo projeto Unity com o sistema integrado. A partir da
 Há um template customizado do build do WebGL no projeto da Unity que ao exportar para web, no arquivo index.html, há uma referência externa ao script
 do PeerJS, uma biblioteca que abstrai e simplifica muito a utilização da tecnologia WebRTC. Lá na Unity usando um arquivo .jslib é feito
 uma ponte das funções Javascript com C# linguagem nativa e principal para programação dos jogos na engine. Portanto, todo processo
-do WebRTC: conexão entre os peers e também a criação e o envio de mensagens, é feito do via Javascript.
+do WebRTC: conexão entre os peers e também a criação e o envio de mensagens, é feito via Javascript.
 
-## Utilização
+Abaixo, encontra-se um vídeo explicativo do framework, mostrando o repositório e explicando um pouco do código fonte dentro da Unity e além da exibição de um projeto exemplo - um jogo top down 2d multiplayer online.
+
+[![Proton - apresentação do framework](https://imgur.com/49RleRV.png)](https://www.youtube.com/watch?v=KQkge2E_VZk)
+*Para ir para o vídeo basta clicar na imagem que será redirecionado para o Youtube.*
+
+## Utilização (resumo)
 
 Para entender os conceitos de networking para construir um jogo multiplayer online na Unity usando esse framework, devemos aplicar alguns passos. Se você quiser adicionar um jogador onde só você controla (comportamento esperado) você precisa adicionar nesse objeto o seguinte script ao GameObject: `EntityIdentity`.
 
@@ -78,3 +83,13 @@ public class PlayerNetwork : MonoBehaviour
 Após a criação do script, basta adicionar esse ao objeto do Player e criar um prefab desse GameObject para podermos instanciá-lo ao entrar/criar uma partida multiplayer. 
 
 Para começar os testes, vamos criar um GameObject em branco e renomeá-lo (isso é opcional, apenas mais organização) para ProtonManager, clicar nele e adicionar o script de mesmo nome `ProtonManager`. Nele vai ser feito todo o gerenciamento de rede, a comunicação nos canais de dados, envio e recebimento de informações, entrada dos jogadores e também o instanciamento dos jogadores. Portanto, basta preencher a variável `playerPrefab` com o prefab que foi criado anteriormente do Player. 
+
+**Observação importante:** é necessário adicionar todos os prefabs na pasta **Resources**!
+
+## Estatísticas de rede
+
+Para acompanhamento de estatísticas de rede como latência média, mínima e máxima, além de percentual de perda de pacotes, pacotes enviados e recebidos e bytes enviados e recebidos, foi criado uma página para condensar esses dados de forma gráfica, permitindo para cada peer novo que acesse um jogo usando o framework possa acompanhar esses dados. Na figura abaixo, é possível visualizar uma imagem da página:
+
+![](https://imgur.com/tWNEM5p.png)
+
+Portanto, cada peer novo que entrar numa partida, vai popular esse dropdown de peers e ao selecionar qualquer um, começará a visualizar suas estatísticas. Isso é ótimo para realizar medições e análises de performance de rede - se realmente seu jogo está otimizado. Os gráficos e seus valores são atualizados a cada 5 segundos e inclusive o jogo faz um request (para enviar os dados) para o servidor de logs no mesmo tempo também.
